@@ -1,17 +1,49 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const Map = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const { user } = useAuth();
+  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (user) {
+      fetchMapboxToken();
+    }
+  }, [user]);
 
-    // Initialize map with a placeholder token
-    // Users will need to add their Mapbox token
-    mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbGV1b2s5ZGwxMGl5M3ZxbzA4eTg2OW1zIn0.example';
+  const fetchMapboxToken = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("mapbox_token")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (data?.mapbox_token) {
+        setMapboxToken(data.mapbox_token);
+      }
+    } catch (error) {
+      console.error("Error fetching mapbox token:", error);
+      toast.error("Failed to load map configuration");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!mapContainer.current || !mapboxToken) return;
+
+    // Initialize map
+    mapboxgl.accessToken = mapboxToken;
     
     try {
       map.current = new mapboxgl.Map({
@@ -116,7 +148,28 @@ const Map = () => {
     return () => {
       map.current?.remove();
     };
-  }, []);
+  }, [mapboxToken]);
+
+  if (loading) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center">
+        <div className="text-muted-foreground">Loading map...</div>
+      </div>
+    );
+  }
+
+  if (!mapboxToken) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-muted-foreground">Mapbox token not configured</div>
+          <div className="text-sm text-muted-foreground">
+            Go to Settings to add your Mapbox public token
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full">

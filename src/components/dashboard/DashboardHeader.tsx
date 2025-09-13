@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { ChevronRight, LogOut, Menu } from "lucide-react";
+import { ChevronRight, LogOut, Menu, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 import type { Project } from "@/pages/Dashboard";
 
 interface DashboardHeaderProps {
@@ -51,11 +52,17 @@ export const DashboardHeader = ({ selectedProject, onToggleSidebar, sidebarOpen 
         </div>
       </div>
 
-      {/* User info and sign out */}
+      {/* User info and actions */}
       <div className="flex items-center space-x-4">
         <span className="text-sm text-muted-foreground">
           {user?.email}
         </span>
+        <Link to="/settings">
+          <Button variant="ghost" size="sm" className="gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
+          </Button>
+        </Link>
         <Button 
           variant="ghost" 
           size="sm" 

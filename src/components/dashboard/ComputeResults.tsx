@@ -80,7 +80,7 @@ export function ComputeResults({ projectId }: ComputeResultsProps) {
                 ) : (
                   <>
                     <CheckCircle className="w-3 h-3" />
-                    Complete
+                    <span className="block">Complete</span>
                   </>
                 )}
               </Badge>

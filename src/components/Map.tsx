@@ -46,6 +46,13 @@ const Map = ({ project }: MapProps) => {
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
 
+    // Function to handle map resize
+    const handleResize = () => {
+      if (map.current) {
+        map.current.resize();
+      }
+    };
+
     // Initialize map
     mapboxgl.accessToken = mapboxToken;
 
@@ -179,9 +186,16 @@ const Map = ({ project }: MapProps) => {
       }
     }
 
+    // Add resize observer to handle layout changes
+    const resizeObserver = new ResizeObserver(handleResize);
+    if (mapContainer.current) {
+      resizeObserver.observe(mapContainer.current);
+    }
+
     // Cleanup
     return () => {
       map.current?.remove();
+      resizeObserver.disconnect();
     };
   }, [mapboxToken]);
 

@@ -3,7 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Clock, CheckCircle, AlertCircle, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ComputeResult {
@@ -22,6 +24,12 @@ interface ComputeResultsProps {
 export function ComputeResults({ projectId }: ComputeResultsProps) {
   const [results, setResults] = useState<ComputeResult[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const truncateResult = (result: any, maxLength = 200) => {
+    const resultString = JSON.stringify(result, null, 2);
+    if (resultString.length <= maxLength) return resultString;
+    return resultString.slice(0, maxLength) + '...';
+  };
 
   useEffect(() => {
     fetchResults();
@@ -92,9 +100,29 @@ export function ComputeResults({ projectId }: ComputeResultsProps) {
           <CardContent>
             {result.result && (
               <div className="mt-2">
-                <h4 className="text-sm font-medium mb-2">Result:</h4>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium">Result:</h4>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-7 px-2">
+                        <Eye className="w-3 h-3 mr-1" />
+                        View Full
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+                      <DialogHeader>
+                        <DialogTitle>Full Result - {result.function}</DialogTitle>
+                      </DialogHeader>
+                      <div className="overflow-auto">
+                        <pre className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap">
+                          {JSON.stringify(result.result, null, 2)}
+                        </pre>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
-                  {JSON.stringify(result.result, null, 2)}
+                  {truncateResult(result.result)}
                 </pre>
               </div>
             )}

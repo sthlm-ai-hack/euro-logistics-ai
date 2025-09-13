@@ -20,8 +20,13 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
 
   // Load default visualization on project change
   useEffect(() => {
+    // Reset visualization state when project changes
+    setActiveFlowVisualization(null);
+    setFlowVisualizationData(null);
+    setHasSetDefault(false);
+
     const loadDefaultVisualization = async () => {
-      if (!project?.id || hasSetDefault) return;
+      if (!project?.id) return;
       
       try {
         const { supabase } = await import("@/integrations/supabase/client");
@@ -51,7 +56,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
     };
 
     loadDefaultVisualization();
-  }, [project?.id, hasSetDefault]);
+  }, [project?.id]);
 
   const handleFlowVisualizationToggle = (flowData: any | null, resultId: string) => {
     if (flowData) {

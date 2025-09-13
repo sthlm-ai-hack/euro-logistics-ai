@@ -121,29 +121,8 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
 
       setInputValue("");
 
-      // Simulate AI response after a delay
-      setTimeout(async () => {
-        const { error: aiError } = await supabase
-          .from('chat_messages')
-          .insert({
-            project_id: project.id,
-            user_id: user.id,
-            message: "I understand your request. I'm processing the information about your project and will help you accordingly.",
-            sender: 'ai',
-            metadata: {}
-          });
-
-        if (aiError) {
-          console.error('Error saving AI message:', aiError);
-          toast({
-            title: "Error",
-            description: "Failed to get AI response",
-            variant: "destructive",
-          });
-        }
-
-        setIsLoading(false);
-      }, 1000);
+      // Just end loading state - no simulated AI response
+      setIsLoading(false);
 
     } catch (error) {
       console.error('Error in handleSendMessage:', error);

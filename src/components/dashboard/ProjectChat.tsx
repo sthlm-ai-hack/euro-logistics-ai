@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import ReactMarkdown from "react-markdown";
 import type { Project } from "@/pages/Dashboard";
 
 function sleep(time) {
@@ -198,7 +199,9 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
                     {message.sender === "ai" && (
                       <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />
                     )}
-                    <div className="text-sm">{message.message}</div>
+                    <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown>{message.message}</ReactMarkdown>
+                    </div>
                   </div>
                   <div
                     className={`text-xs mt-1 ${

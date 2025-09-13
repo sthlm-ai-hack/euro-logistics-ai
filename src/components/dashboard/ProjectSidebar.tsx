@@ -90,8 +90,8 @@ const ProjectItem = ({
         className={cn(
           "relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 border",
           isSelected
-            ? "bg-accent/80 border-accent text-accent-foreground shadow-sm"
-            : "bg-background border-border hover:bg-accent/20 hover:border-accent/40"
+            ? "bg-slate-200 border-slate-300 text-slate-900 shadow-sm"
+            : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300"
         )}
       >
         <div className="flex-1 min-w-0 mr-2">

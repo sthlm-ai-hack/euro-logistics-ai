@@ -153,8 +153,8 @@ export const ProjectSidebar = ({
                     onClick={() => onSelectProject(project)}
                     className={`w-full p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedProject?.id === project.id
-                        ? 'bg-muted text-foreground border border-muted-foreground/20'
-                        : 'bg-white hover:bg-secondary border border-border'
+                        ? 'bg-secondary text-foreground border border-border'
+                        : 'bg-white hover:bg-secondary/50 border border-border'
                     }`}
                   >
                     <div className="flex items-center justify-between">

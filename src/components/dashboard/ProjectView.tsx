@@ -1,9 +1,10 @@
-import { Bot, Clock, Calendar, MessageSquare, Info } from "lucide-react";
+import { Bot, Clock, Calendar, MessageSquare, Info, Calculator } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Map from "@/components/Map";
 import { ProjectChat } from "./ProjectChat";
+import { ComputeResults } from "./ComputeResults";
 import type { Project } from "@/pages/Dashboard";
 
 interface ProjectViewProps {
@@ -69,7 +70,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
         </div>
 
         <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-2 mx-auto mt-2 mb-0 max-w-sm flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-3 mx-auto mt-2 mb-0 max-w-md flex-shrink-0">
             <TabsTrigger value="details" className="flex items-center gap-2">
               <Info className="w-4 h-4" />
               Details
@@ -77,6 +78,10 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
               AI Chat
+            </TabsTrigger>
+            <TabsTrigger value="compute" className="flex items-center gap-2">
+              <Calculator className="w-4 h-4" />
+              Compute
             </TabsTrigger>
           </TabsList>
 
@@ -142,6 +147,10 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
 
           <TabsContent value="chat" className="flex-1 m-0 min-h-0">
             <ProjectChat project={project} />
+          </TabsContent>
+
+          <TabsContent value="compute" className="flex-1 overflow-y-auto mt-4 px-4">
+            <ComputeResults projectId={project.id} />
           </TabsContent>
         </Tabs>
       </div>

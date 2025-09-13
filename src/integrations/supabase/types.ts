@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      compute_results: {
+        Row: {
+          created_at: string
+          function: string
+          id: string
+          is_pending: boolean
+          project_id: string
+          result: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          function: string
+          id?: string
+          is_pending?: boolean
+          project_id: string
+          result?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          function?: string
+          id?: string
+          is_pending?: boolean
+          project_id?: string
+          result?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

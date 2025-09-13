@@ -76,8 +76,14 @@ export const ChangedNodes = ({ projectId }: ChangedNodesProps) => {
   }, [projectId]);
 
   const formatCoordinates = (coords: any) => {
-    if (Array.isArray(coords) && coords.length === 2) {
-      return `${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}`;
+    if (coords && typeof coords === 'object') {
+      if (coords.lat !== undefined && coords.lon !== undefined) {
+        // Handle { lat: x, lon: y } format
+        return `${parseFloat(coords.lat).toFixed(6)}, ${parseFloat(coords.lon).toFixed(6)}`;
+      } else if (Array.isArray(coords) && coords.length === 2) {
+        // Handle [longitude, latitude] format
+        return `${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}`;
+      }
     }
     return "Invalid coordinates";
   };

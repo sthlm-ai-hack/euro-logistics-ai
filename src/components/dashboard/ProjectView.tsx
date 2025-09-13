@@ -47,8 +47,8 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
       </div>
 
       {/* Right sidebar with tabs */}
-      <div className="w-80 border-l bg-background flex flex-col">
-        <div className="p-4 border-b">
+      <div className="w-80 border-l bg-background flex flex-col h-full">
+        <div className="p-4 border-b flex-shrink-0">
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">{project.title}</h2>
             <div className="flex flex-col gap-2">
@@ -68,8 +68,8 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
           </div>
         </div>
 
-        <Tabs defaultValue="details" className="flex-1 flex flex-col">
-          <TabsList className="grid w-full grid-cols-2 mx-4 mt-4 mb-0 justify-self-center max-w-md">
+        <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="grid w-full grid-cols-2 mx-4 mt-4 mb-0 justify-self-center max-w-md flex-shrink-0">
             <TabsTrigger value="details" className="flex items-center gap-2">
               <Info className="w-4 h-4" />
               Details
@@ -80,7 +80,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="flex-1 p-4 pt-2 space-y-4 overflow-y-auto m-0">
+          <TabsContent value="details" className="flex-1 p-4 pt-2 space-y-4 overflow-y-auto m-0 min-h-0">
             <Card className="border-0 shadow-none bg-muted/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -140,7 +140,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="chat" className="flex-1 m-0">
+          <TabsContent value="chat" className="flex-1 m-0 min-h-0">
             <ProjectChat project={project} />
           </TabsContent>
         </Tabs>

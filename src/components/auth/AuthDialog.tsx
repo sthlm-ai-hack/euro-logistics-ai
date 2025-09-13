@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,10 @@ interface AuthDialogProps {
 
 export const AuthDialog = ({ open, onOpenChange, defaultView = "signin" }: AuthDialogProps) => {
   const [view, setView] = useState<"signin" | "signup">(defaultView);
+
+  useEffect(() => {
+    setView(defaultView);
+  }, [defaultView]);
 
   const handleClose = () => {
     onOpenChange(false);

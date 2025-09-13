@@ -74,9 +74,22 @@ const Map = () => {
             "horizon-blend": 0.1,
           });
 
-          // Customize map colors for black/white theme
-          map.current.setPaintProperty("land", "background-color", "#ffffff");
-          map.current.setPaintProperty("water", "fill-color", "#f8f9fa");
+          // Safely try to customize map colors for black/white theme
+          try {
+            // Check if layers exist before trying to modify them
+            const style = map.current.getStyle();
+            const landLayer = style.layers?.find(layer => layer.id === 'land');
+            const waterLayer = style.layers?.find(layer => layer.id === 'water');
+            
+            if (landLayer) {
+              map.current.setPaintProperty("land", "background-color", "#ffffff");
+            }
+            if (waterLayer) {
+              map.current.setPaintProperty("water", "fill-color", "#f8f9fa");
+            }
+          } catch (error) {
+            console.warn("Could not customize map layer colors:", error);
+          }
         }
       });
 

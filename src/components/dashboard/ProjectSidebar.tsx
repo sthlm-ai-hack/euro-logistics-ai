@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Settings, Trash2, Bot, Clock } from "lucide-react";
+import { Plus, Settings, Trash2, Bot, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,6 +31,7 @@ interface ProjectSidebarProps {
   onCreateProject: (title: string) => void;
   onUpdateProject: (projectId: string, updates: Partial<Project>) => void;
   onDeleteProject: (projectId: string) => void;
+  onClose?: () => void;
   loading: boolean;
 }
 
@@ -90,7 +91,7 @@ const ProjectItem = ({
         className={cn(
           "relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 border",
           isSelected
-            ? "bg-slate-200 border-slate-300 text-slate-900 shadow-sm"
+            ? "bg-slate-400 border-slate-500 text-slate-900 shadow-sm"
             : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300"
         )}
       >
@@ -178,6 +179,7 @@ export const ProjectSidebar = ({
   onCreateProject,
   onUpdateProject,
   onDeleteProject,
+  onClose,
   loading,
 }: ProjectSidebarProps) => {
   const [newProjectTitle, setNewProjectTitle] = useState("");
@@ -215,7 +217,19 @@ export const ProjectSidebar = ({
     <div className="h-full flex flex-col bg-card/30 border-r border-border">
       {/* Header */}
       <div className="p-4 border-b border-border bg-card/50">
-        <h2 className="text-lg font-semibold mb-3">Projects</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">Projects</h2>
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
         
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>

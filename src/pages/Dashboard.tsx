@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectsLoading, setProjectsLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -133,19 +134,26 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background light">
-      <DashboardHeader selectedProject={selectedProject} />
+      <DashboardHeader 
+        selectedProject={selectedProject} 
+        onToggleSidebar={() => setSidebarOpen(true)}
+        sidebarOpen={sidebarOpen}
+      />
       <div className="flex flex-1">
-        <div className="w-80 border-r border-border bg-card/50">
-          <ProjectSidebar
-            projects={projects}
-            selectedProject={selectedProject}
-            onSelectProject={setSelectedProject}
-            onCreateProject={createProject}
-            onUpdateProject={updateProject}
-            onDeleteProject={deleteProject}
-            loading={projectsLoading}
-          />
-        </div>
+        {sidebarOpen && (
+          <div className="w-80 border-r border-border bg-card/50">
+            <ProjectSidebar
+              projects={projects}
+              selectedProject={selectedProject}
+              onSelectProject={setSelectedProject}
+              onCreateProject={createProject}
+              onUpdateProject={updateProject}
+              onDeleteProject={deleteProject}
+              onClose={() => setSidebarOpen(false)}
+              loading={projectsLoading}
+            />
+          </div>
+        )}
         <main className="flex-1 overflow-auto">
           <ProjectView project={selectedProject} />
         </main>

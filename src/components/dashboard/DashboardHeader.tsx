@@ -1,18 +1,32 @@
 import { Button } from "@/components/ui/button";
-import { ChevronRight, LogOut } from "lucide-react";
+import { ChevronRight, LogOut, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Project } from "@/pages/Dashboard";
 
 interface DashboardHeaderProps {
   selectedProject: Project | null;
+  onToggleSidebar?: () => void;
+  sidebarOpen?: boolean;
 }
 
-export const DashboardHeader = ({ selectedProject }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ selectedProject, onToggleSidebar, sidebarOpen }: DashboardHeaderProps) => {
   const { user, signOut } = useAuth();
 
   return (
     <header className="h-16 bg-background border-b border-border px-6 flex items-center justify-between">
       <div className="flex items-center space-x-4">
+        {/* Sidebar toggle button */}
+        {onToggleSidebar && !sidebarOpen && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleSidebar}
+            className="h-8 w-8 p-0"
+          >
+            <Menu className="w-4 h-4" />
+          </Button>
+        )}
+        
         {/* Logo */}
         <div 
           className="flex items-center space-x-2 cursor-pointer"

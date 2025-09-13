@@ -25,6 +25,7 @@ interface ComputeResultsProps {
 
 export function ComputeResults({ projectId, onFlowVisualizationToggle, activeFlowVisualization }: ComputeResultsProps) {
   const [results, setResults] = useState<ComputeResult[]>([]);
+  const [hasSetDefault, setHasSetDefault] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const isMinCostFlow = (result: ComputeResult) => {
@@ -54,6 +55,18 @@ export function ComputeResults({ projectId, onFlowVisualizationToggle, activeFlo
     if (resultString.length <= maxLength) return resultString;
     return resultString.slice(0, maxLength) + '...';
   };
+
+  // Show most recent min cost flow result by default
+  useEffect(() => {
+    if (results.length > 0 && !hasSetDefault && !activeFlowVisualization && onFlowVisualizationToggle) {
+      const mostRecentMinCostFlow = results.find(result => hasValidGeometry(result));
+      
+      if (mostRecentMinCostFlow) {
+        onFlowVisualizationToggle(mostRecentMinCostFlow.result, mostRecentMinCostFlow.id);
+        setHasSetDefault(true);
+      }
+    }
+  }, [results, hasSetDefault, activeFlowVisualization, onFlowVisualizationToggle]);
 
   useEffect(() => {
     fetchResults();

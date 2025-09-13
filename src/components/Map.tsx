@@ -229,11 +229,19 @@ const Map = ({ project, flowVisualizationData }: MapProps) => {
           }));
 
         if (features.length > 0) {
+
+          // Sort features by left-most coordinate for animation
+          const sortedFeatures = features.sort((a, b) => {
+            const aLeftMost = Math.min(...a.geometry.coordinates.map((coord: number[]) => coord[0]));
+            const bLeftMost = Math.min(...b.geometry.coordinates.map((coord: number[]) => coord[0]));
+            return aLeftMost - bLeftMost;
+          });
+
           map.current.addSource('flow-lines', {
             type: 'geojson',
             data: {
               type: 'FeatureCollection',
-              features: features
+              features: []
             }
           });
 
@@ -251,10 +259,10 @@ const Map = ({ project, flowVisualizationData }: MapProps) => {
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                8, 3,
-                16, 8
+                8, 15,  // 5x wider
+                16, 40  // 5x wider
               ],
-              'line-opacity': 0.8,
+              'line-opacity': 0.4, // More transparent
               'line-blur': 1
             }
           });
@@ -274,13 +282,31 @@ const Map = ({ project, flowVisualizationData }: MapProps) => {
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                8, 6,
-                16, 12
+                8, 30,  // 5x wider
+                16, 60  // 5x wider
               ],
-              'line-opacity': 0.3,
+              'line-opacity': 0.15, // More transparent
               'line-blur': 3
             }
           }, 'flow-lines'); // Add glow layer below the main line layer
+
+          // Animate lines appearing one by one over 7 seconds
+          const animationDuration = 7000; // 7 seconds
+          const delayPerLine = animationDuration / sortedFeatures.length;
+          
+          sortedFeatures.forEach((feature, index) => {
+            setTimeout(() => {
+              if (map.current?.getSource('flow-lines')) {
+                const source = map.current.getSource('flow-lines') as mapboxgl.GeoJSONSource;
+                const currentData = source._data as any;
+                const newData = {
+                  type: 'FeatureCollection' as const,
+                  features: [...(currentData?.features || []), feature]
+                };
+                source.setData(newData);
+              }
+            }, index * delayPerLine);
+          });
         }
       }
     };

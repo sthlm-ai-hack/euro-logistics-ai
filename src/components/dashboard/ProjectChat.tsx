@@ -64,8 +64,8 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1">
+    <div className="flex flex-col h-full max-h-full overflow-hidden">
+      <ScrollArea className="flex-1 overflow-hidden">
         <div className="p-4 space-y-4">
         {messages.map((message) => (
           <div

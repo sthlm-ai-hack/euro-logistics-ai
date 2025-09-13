@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bot, Clock, Calendar, MessageSquare, Info, Calculator, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,42 @@ interface ProjectViewProps {
 export const ProjectView = ({ project }: ProjectViewProps) => {
   const [activeFlowVisualization, setActiveFlowVisualization] = useState<string | null>(null);
   const [flowVisualizationData, setFlowVisualizationData] = useState<any | null>(null);
+  const [hasSetDefault, setHasSetDefault] = useState(false);
+
+  // Load default visualization on project change
+  useEffect(() => {
+    const loadDefaultVisualization = async () => {
+      if (!project?.id || hasSetDefault) return;
+      
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data, error } = await supabase
+          .from('compute_results')
+          .select('*')
+          .eq('project_id', project.id)
+          .eq('function', 'min cost flow')
+          .eq('is_pending', false)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const validResult = data?.find(result => {
+          const edges = result.result?.edges || [];
+          return edges.some((edge: any) => edge.geometry && Array.isArray(edge.geometry) && edge.geometry.length > 0);
+        });
+
+        if (validResult) {
+          setActiveFlowVisualization(validResult.id);
+          setFlowVisualizationData(validResult.result);
+          setHasSetDefault(true);
+        }
+      } catch (error) {
+        console.error('Error loading default visualization:', error);
+      }
+    };
+
+    loadDefaultVisualization();
+  }, [project?.id, hasSetDefault]);
 
   const handleFlowVisualizationToggle = (flowData: any | null, resultId: string) => {
     if (flowData) {

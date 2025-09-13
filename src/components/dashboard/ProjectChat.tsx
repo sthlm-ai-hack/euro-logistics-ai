@@ -65,7 +65,8 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1 p-4 space-y-4">
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -102,6 +103,7 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
             </Card>
           </div>
         )}
+        </div>
       </ScrollArea>
 
       <div className="border-t p-4">

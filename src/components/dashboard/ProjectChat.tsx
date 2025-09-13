@@ -17,7 +17,7 @@ interface ChatMessage {
   message: string;
   sender: string;
   user_id: string;
-  lecture_id: string;
+  project_id: string;
   created_at: string;
   metadata?: any;
 }
@@ -34,7 +34,7 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
       const { data, error } = await supabase
         .from('chat_messages')
         .select('*')
-        .eq('lecture_id', project.id)
+        .eq('project_id', project.id)
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -63,7 +63,7 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
           event: 'INSERT',
           schema: 'public',
           table: 'chat_messages',
-          filter: `lecture_id=eq.${project.id}`
+          filter: `project_id=eq.${project.id}`
         },
         (payload) => {
           console.log('New message received:', payload);
@@ -101,7 +101,7 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
       const { error } = await supabase
         .from('chat_messages')
         .insert({
-          lecture_id: project.id,
+          project_id: project.id,
           user_id: user.id,
           message: inputValue,
           sender: 'user',
@@ -126,7 +126,7 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
         const { error: aiError } = await supabase
           .from('chat_messages')
           .insert({
-            lecture_id: project.id,
+            project_id: project.id,
             user_id: user.id,
             message: "I understand your request. I'm processing the information about your project and will help you accordingly.",
             sender: 'ai',

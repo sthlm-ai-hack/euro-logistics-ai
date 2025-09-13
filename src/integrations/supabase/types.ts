@@ -18,9 +18,9 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          lecture_id: string
           message: string
           metadata: Json | null
+          project_id: string
           sender: string
           updated_at: string
           user_id: string
@@ -28,9 +28,9 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          lecture_id: string
           message: string
           metadata?: Json | null
+          project_id: string
           sender: string
           updated_at?: string
           user_id: string
@@ -38,9 +38,9 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          lecture_id?: string
           message?: string
           metadata?: Json | null
+          project_id?: string
           sender?: string
           updated_at?: string
           user_id?: string

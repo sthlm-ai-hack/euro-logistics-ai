@@ -109,12 +109,12 @@ export function ComputeResults({ projectId }: ComputeResultsProps) {
                         View Full
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-                      <DialogHeader>
+                    <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+                      <DialogHeader className="flex-shrink-0">
                         <DialogTitle>Full Result - {result.function}</DialogTitle>
                       </DialogHeader>
-                      <div className="overflow-auto">
-                        <pre className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap">
+                      <div className="flex-1 overflow-auto min-h-0">
+                        <pre className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap break-words">
                           {JSON.stringify(result.result, null, 2)}
                         </pre>
                       </div>

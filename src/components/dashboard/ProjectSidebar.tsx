@@ -1,18 +1,5 @@
 import { useState } from "react";
 import { Plus, Settings, Trash2, Bot, Clock, LogOut } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
-  SidebarFooter,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -113,15 +100,12 @@ export const ProjectSidebar = ({
   };
 
   return (
-    <Sidebar className="w-80">
-      <SidebarHeader className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Projects</h2>
-          <SidebarTrigger />
-        </div>
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b">
+        <h2 className="text-lg font-semibold">Projects</h2>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full mt-2">
+            <Button className="w-full mt-3">
               <Plus className="w-4 h-4 mr-2" />
               New Project
             </Button>
@@ -148,108 +132,109 @@ export const ProjectSidebar = ({
             </div>
           </DialogContent>
         </Dialog>
-      </SidebarHeader>
+      </div>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {loading ? (
-              <div className="p-4 text-center text-muted-foreground">
-                Loading projects...
-              </div>
-            ) : projects.length === 0 ? (
-              <div className="p-4 text-center text-muted-foreground">
-                No projects yet. Create your first project!
-              </div>
-            ) : (
-              <SidebarMenu>
-                {projects.map((project) => (
-                  <SidebarMenuItem key={project.id}>
-                    <div className="space-y-2">
-                      <SidebarMenuButton
-                        onClick={() => onSelectProject(project)}
-                        isActive={selectedProject?.id === project.id}
-                        className="w-full justify-start"
-                      >
-                        <div className="flex-1 min-w-0">
-                          {editingProject?.id === project.id ? (
-                            <Input
-                              value={editTitle}
-                              onChange={(e) => setEditTitle(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") saveRename();
-                                if (e.key === "Escape") cancelRename();
-                              }}
-                              onBlur={saveRename}
-                              className="h-6 text-sm"
-                              autoFocus
-                            />
-                          ) : (
-                            <span className="truncate">{project.title}</span>
-                          )}
-                        </div>
-                        {editingProject?.id !== project.id && (
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRenameProject(project);
-                              }}
-                              className="h-6 w-6 p-0"
-                            >
-                              <Settings className="w-3 h-3" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Project</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "{project.title}"? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => onDeleteProject(project.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
+      <div className="flex-1 overflow-auto">
+        <div className="p-4">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">Your Projects</h3>
+          {loading ? (
+            <div className="text-center text-muted-foreground py-8">
+              Loading projects...
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              No projects yet. Create your first project!
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {projects.map((project) => (
+                <div key={project.id} className="space-y-2">
+                  <div
+                    onClick={() => onSelectProject(project)}
+                    className={`w-full p-3 rounded-lg cursor-pointer transition-colors ${
+                      selectedProject?.id === project.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-muted'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        {editingProject?.id === project.id ? (
+                          <Input
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") saveRename();
+                              if (e.key === "Escape") cancelRename();
+                            }}
+                            onBlur={saveRename}
+                            className="h-8 text-sm"
+                            autoFocus
+                          />
+                        ) : (
+                          <span className="truncate font-medium">{project.title}</span>
                         )}
-                      </SidebarMenuButton>
-                      
-                      {selectedProject?.id === project.id && getStatusBadges(project).length > 0 && (
-                        <div className="flex gap-1 px-2 pb-2">
-                          {getStatusBadges(project)}
+                      </div>
+                      {editingProject?.id !== project.id && (
+                        <div className="flex gap-1 ml-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRenameProject(project);
+                            }}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Settings className="w-3 h-3" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{project.title}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => onDeleteProject(project.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       )}
                     </div>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            )}
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+                  </div>
+                  
+                  {selectedProject?.id === project.id && getStatusBadges(project).length > 0 && (
+                    <div className="flex gap-1 px-3 pb-2">
+                      {getStatusBadges(project)}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
-      <SidebarFooter className="p-4 border-t">
+      <div className="p-4 border-t bg-muted/30">
         <div className="space-y-2">
           <div className="text-sm text-muted-foreground">
             {user?.email}
@@ -264,7 +249,7 @@ export const ProjectSidebar = ({
             Sign Out
           </Button>
         </div>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </div>
   );
 };

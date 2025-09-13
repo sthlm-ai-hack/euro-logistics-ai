@@ -1,6 +1,24 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { AuthDialog } from "@/components/auth/AuthDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { LogOut } from "lucide-react";
 
 const Navigation = () => {
+  const { user, signOut } = useAuth();
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [authView, setAuthView] = useState<"signin" | "signup">("signin");
+
+  const handleSignInClick = () => {
+    setAuthView("signin");
+    setAuthDialogOpen(true);
+  };
+
+  const handleSignUpClick = () => {
+    setAuthView("signup");
+    setAuthDialogOpen(true);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -25,15 +43,40 @@ const Navigation = () => {
           </div>
           
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Button variant="hero" size="sm">
-              Get Started
-            </Button>
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                  {user.email}
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={signOut}
+                  className="gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={handleSignInClick}>
+                  Sign In
+                </Button>
+                <Button variant="hero" size="sm" onClick={handleSignUpClick}>
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
+      
+      <AuthDialog 
+        open={authDialogOpen} 
+        onOpenChange={setAuthDialogOpen}
+        defaultView={authView}
+      />
     </nav>
   );
 };

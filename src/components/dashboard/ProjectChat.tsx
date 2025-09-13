@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type { Project } from "@/pages/Dashboard";
 
 interface ProjectChatProps {
@@ -12,48 +14,146 @@ interface ProjectChatProps {
 
 interface ChatMessage {
   id: string;
-  content: string;
-  isUser: boolean;
-  timestamp: Date;
+  message: string;
+  sender: string;
+  user_id: string;
+  lecture_id: string;
+  created_at: string;
+  metadata?: any;
 }
 
 export const ProjectChat = ({ project }: ProjectChatProps) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "1",
-      content: `Hello! I'm here to help you with project "${project.title}". What would you like to know or work on?`,
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Fetch existing messages on component mount
+  useEffect(() => {
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('lecture_id', project.id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching messages:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load chat messages",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setMessages(data || []);
+    };
+
+    fetchMessages();
+  }, [project.id, toast]);
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('chat_messages_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `lecture_id=eq.${project.id}`
+        },
+        (payload) => {
+          console.log('New message received:', payload);
+          const newMessage = payload.new as ChatMessage;
+          setMessages(prev => [...prev, newMessage]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [project.id]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: inputValue,
-      isUser: true,
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: "I understand your request. I'm processing the information about your project and will help you accordingly.",
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiMessage]);
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to send messages",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Save user message to database
+      const { error } = await supabase
+        .from('chat_messages')
+        .insert({
+          lecture_id: project.id,
+          user_id: user.id,
+          message: inputValue,
+          sender: 'user',
+          metadata: {}
+        });
+
+      if (error) {
+        console.error('Error saving message:', error);
+        toast({
+          title: "Error",
+          description: "Failed to send message",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      setInputValue("");
+
+      // Simulate AI response after a delay
+      setTimeout(async () => {
+        const { error: aiError } = await supabase
+          .from('chat_messages')
+          .insert({
+            lecture_id: project.id,
+            user_id: user.id,
+            message: "I understand your request. I'm processing the information about your project and will help you accordingly.",
+            sender: 'ai',
+            metadata: {}
+          });
+
+        if (aiError) {
+          console.error('Error saving AI message:', aiError);
+          toast({
+            title: "Error",
+            description: "Failed to get AI response",
+            variant: "destructive",
+          });
+        }
+
+        setIsLoading(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error in handleSendMessage:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -70,25 +170,25 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.isUser ? "justify-end" : "justify-start"}`}
+            className={`flex ${message.sender === 'user' ? "justify-end" : "justify-start"}`}
           >
             <Card className={`max-w-[80%] p-3 ${
-              message.isUser 
+              message.sender === 'user' 
                 ? "bg-primary text-primary-foreground" 
                 : "bg-muted"
             }`}>
               <div className="flex items-start gap-2">
-                {!message.isUser && (
+                {message.sender === 'ai' && (
                   <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 )}
-                <div className="text-sm">{message.content}</div>
+                <div className="text-sm">{message.message}</div>
               </div>
               <div className={`text-xs mt-1 ${
-                message.isUser 
+                message.sender === 'user' 
                   ? "text-primary-foreground/70" 
                   : "text-muted-foreground"
               }`}>
-                {message.timestamp.toLocaleTimeString()}
+                {new Date(message.created_at).toLocaleTimeString()}
               </div>
             </Card>
           </div>

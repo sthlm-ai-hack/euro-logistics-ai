@@ -153,7 +153,7 @@ export const ProjectSidebar = ({
                     onClick={() => onSelectProject(project)}
                     className={`w-full p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedProject?.id === project.id
-                        ? 'bg-accent text-accent-foreground border border-accent'
+                        ? 'bg-muted text-foreground border border-muted-foreground/20'
                         : 'bg-white hover:bg-secondary border border-border'
                     }`}
                   >

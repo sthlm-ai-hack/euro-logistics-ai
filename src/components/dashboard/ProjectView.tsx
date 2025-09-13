@@ -69,7 +69,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
         </div>
 
         <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-2 mx-4 mt-4 mb-0 justify-self-center max-w-md flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-2 mx-auto mt-2 mb-0 max-w-sm flex-shrink-0">
             <TabsTrigger value="details" className="flex items-center gap-2">
               <Info className="w-4 h-4" />
               Details

@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      changed_nodes: {
+        Row: {
+          color: string
+          coordinates: Json
+          created_at: string
+          id: string
+          name: string
+          osm_id: string
+          project_id: string
+          supply: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color: string
+          coordinates: Json
+          created_at?: string
+          id?: string
+          name: string
+          osm_id: string
+          project_id: string
+          supply: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          coordinates?: Json
+          created_at?: string
+          id?: string
+          name?: string
+          osm_id?: string
+          project_id?: string
+          supply?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           created_at: string

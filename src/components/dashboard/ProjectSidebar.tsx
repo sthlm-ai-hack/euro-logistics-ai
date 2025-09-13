@@ -100,8 +100,8 @@ export const ProjectSidebar = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b">
+    <div className="h-full flex flex-col bg-card">
+      <div className="p-4 border-b bg-card">
         <h2 className="text-lg font-semibold">Projects</h2>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
@@ -154,7 +154,7 @@ export const ProjectSidebar = ({
                     className={`w-full p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedProject?.id === project.id
                         ? 'bg-primary text-primary-foreground'
-                        : 'bg-background hover:bg-muted border border-border'
+                        : 'bg-card hover:bg-secondary border border-border'
                     }`}
                   >
                     <div className="flex items-center justify-between">

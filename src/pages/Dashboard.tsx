@@ -132,10 +132,10 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background light">
       <DashboardHeader selectedProject={selectedProject} />
       <div className="flex flex-1">
-        <div className="w-80 border-r border-border bg-card">
+        <div className="w-80 border-r border-border bg-card/50">
           <ProjectSidebar
             projects={projects}
             selectedProject={selectedProject}

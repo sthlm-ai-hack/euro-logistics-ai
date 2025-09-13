@@ -52,8 +52,9 @@ const Settings = () => {
         .upsert({
           user_id: user.id,
           mapbox_token: mapboxToken.trim() || null,
-        })
-        .eq("user_id", user.id);
+        }, {
+          onConflict: 'user_id'
+        });
 
       if (error) throw error;
       

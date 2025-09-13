@@ -238,7 +238,7 @@ export const ProjectSidebar = ({
               New Project
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-96 max-w-[90vw]">
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
             </DialogHeader>

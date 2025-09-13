@@ -69,7 +69,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
         </div>
 
         <Tabs defaultValue="details" className="flex-1 flex flex-col">
-          <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
+          <TabsList className="grid w-full grid-cols-2 m-4 mb-0">
             <TabsTrigger value="details" className="flex items-center gap-2">
               <Info className="w-4 h-4" />
               Details
@@ -80,7 +80,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="flex-1 p-4 space-y-4 overflow-y-auto">
+          <TabsContent value="details" className="flex-1 p-4 pt-2 space-y-4 overflow-y-auto">
             <Card className="border-0 shadow-none bg-muted/30">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">

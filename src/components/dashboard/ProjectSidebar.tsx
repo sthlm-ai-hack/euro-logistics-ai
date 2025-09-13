@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Settings, Trash2, Bot, Clock, LogOut } from "lucide-react";
+import { Plus, Settings, Trash2, Bot, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -154,7 +154,7 @@ export const ProjectSidebar = ({
                     className={`w-full p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedProject?.id === project.id
                         ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-muted'
+                        : 'bg-background hover:bg-muted border border-border'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -231,23 +231,6 @@ export const ProjectSidebar = ({
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      <div className="p-4 border-t bg-muted/30">
-        <div className="space-y-2">
-          <div className="text-sm text-muted-foreground">
-            {user?.email}
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={signOut}
-            className="w-full"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
         </div>
       </div>
     </div>

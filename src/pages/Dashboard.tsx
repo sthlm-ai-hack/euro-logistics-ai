@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ProjectSidebar } from "@/components/dashboard/ProjectSidebar";
 import { ProjectView } from "@/components/dashboard/ProjectView";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Navigate } from "react-router-dom";
 
 export interface Project {
@@ -131,21 +132,24 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <div className="w-80 border-r border-border bg-card">
-        <ProjectSidebar
-          projects={projects}
-          selectedProject={selectedProject}
-          onSelectProject={setSelectedProject}
-          onCreateProject={createProject}
-          onUpdateProject={updateProject}
-          onDeleteProject={deleteProject}
-          loading={projectsLoading}
-        />
+    <div className="min-h-screen flex flex-col bg-background">
+      <DashboardHeader selectedProject={selectedProject} />
+      <div className="flex flex-1">
+        <div className="w-80 border-r border-border bg-card">
+          <ProjectSidebar
+            projects={projects}
+            selectedProject={selectedProject}
+            onSelectProject={setSelectedProject}
+            onCreateProject={createProject}
+            onUpdateProject={updateProject}
+            onDeleteProject={deleteProject}
+            loading={projectsLoading}
+          />
+        </div>
+        <main className="flex-1 overflow-auto">
+          <ProjectView project={selectedProject} />
+        </main>
       </div>
-      <main className="flex-1 overflow-auto">
-        <ProjectView project={selectedProject} />
-      </main>
     </div>
   );
 };

@@ -91,7 +91,7 @@ const ProjectItem = ({
         className={cn(
           "relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 border",
           isSelected
-            ? "bg-slate-400 border-slate-500 text-slate-900 shadow-sm"
+            ? "bg-gray-400 border-gray-500 text-gray-900 shadow-sm"
             : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300"
         )}
       >

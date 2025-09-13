@@ -51,9 +51,9 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
       {/* Right sidebar with tabs */}
       <div className="w-80 flex-shrink-0 border-l bg-background flex flex-col h-full">
         <div className="p-4 border-b flex-shrink-0">
-          <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
             <h2 className="text-xl font-semibold">{project.title}</h2>
-            <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
               {isAiResponding && (
                 <Badge variant="secondary" className="text-xs w-fit">
                   <Bot className="w-3 h-3 mr-1" />

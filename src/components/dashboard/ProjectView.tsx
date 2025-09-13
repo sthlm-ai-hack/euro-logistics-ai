@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Bot, Clock, Calendar, MessageSquare, Info, Calculator, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,19 @@ interface ProjectViewProps {
 }
 
 export const ProjectView = ({ project }: ProjectViewProps) => {
+  const [activeFlowVisualization, setActiveFlowVisualization] = useState<string | null>(null);
+  const [flowVisualizationData, setFlowVisualizationData] = useState<any | null>(null);
+
+  const handleFlowVisualizationToggle = (flowData: any | null, resultId: string) => {
+    if (flowData) {
+      setActiveFlowVisualization(resultId);
+      setFlowVisualizationData(flowData);
+    } else {
+      setActiveFlowVisualization(null);
+      setFlowVisualizationData(null);
+    }
+  };
+
   if (!project) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -45,7 +59,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
     <div className="flex h-full w-full overflow-hidden">
       {/* Main map area */}
       <div className="flex-1 min-w-0 relative">
-        <Map project={project} />
+        <Map project={project} flowVisualizationData={flowVisualizationData} />
       </div>
 
       {/* Right sidebar with tabs */}
@@ -155,7 +169,11 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
           </TabsContent>
 
           <TabsContent value="compute" className="flex-1 overflow-y-auto mt-4 px-4">
-            <ComputeResults projectId={project.id} />
+            <ComputeResults 
+              projectId={project.id} 
+              onFlowVisualizationToggle={handleFlowVisualizationToggle}
+              activeFlowVisualization={activeFlowVisualization}
+            />
           </TabsContent>
 
           <TabsContent value="nodes" className="flex-1 overflow-y-auto mt-4 px-4">

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Clock, CheckCircle, AlertCircle, Eye } from "lucide-react";
+import { Clock, CheckCircle, AlertCircle, Eye, Map, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ComputeResult {
@@ -19,11 +19,35 @@ interface ComputeResult {
 
 interface ComputeResultsProps {
   projectId: string;
+  onFlowVisualizationToggle?: (flowData: any | null, resultId: string) => void;
+  activeFlowVisualization?: string | null;
 }
 
-export function ComputeResults({ projectId }: ComputeResultsProps) {
+export function ComputeResults({ projectId, onFlowVisualizationToggle, activeFlowVisualization }: ComputeResultsProps) {
   const [results, setResults] = useState<ComputeResult[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const isMinCostFlow = (result: ComputeResult) => {
+    return result.function === "min cost flow" && result.result && !result.is_pending;
+  };
+
+  const hasValidGeometry = (result: ComputeResult) => {
+    if (!isMinCostFlow(result)) return false;
+    const edges = result.result?.edges || [];
+    return edges.some((edge: any) => edge.geometry && Array.isArray(edge.geometry) && edge.geometry.length > 0);
+  };
+
+  const handleVisualizationToggle = (result: ComputeResult) => {
+    if (!onFlowVisualizationToggle) return;
+    
+    if (activeFlowVisualization === result.id) {
+      // Turn off visualization
+      onFlowVisualizationToggle(null, result.id);
+    } else {
+      // Turn on visualization for this result
+      onFlowVisualizationToggle(result.result, result.id);
+    }
+  };
 
   const truncateResult = (result: any, maxLength = 200) => {
     const resultString = JSON.stringify(result, null, 2);
@@ -102,24 +126,46 @@ export function ComputeResults({ projectId }: ComputeResultsProps) {
               <div className="mt-2">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium">Result:</h4>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-7 px-2">
-                        <Eye className="w-3 h-3 mr-1" />
-                        View Full
+                  <div className="flex gap-2">
+                    {hasValidGeometry(result) && (
+                      <Button 
+                        variant={activeFlowVisualization === result.id ? "default" : "outline"} 
+                        size="sm" 
+                        className="h-7 px-2"
+                        onClick={() => handleVisualizationToggle(result)}
+                      >
+                        {activeFlowVisualization === result.id ? (
+                          <>
+                            <X className="w-3 h-3 mr-1" />
+                            Hide Map
+                          </>
+                        ) : (
+                          <>
+                            <Map className="w-3 h-3 mr-1" />
+                            Show on Map
+                          </>
+                        )}
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
-                      <DialogHeader className="flex-shrink-0">
-                        <DialogTitle>Full Result - {result.function}</DialogTitle>
-                      </DialogHeader>
-                      <div className="flex-1 overflow-auto min-h-0">
-                        <pre className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap break-words">
-                          {JSON.stringify(result.result, null, 2)}
-                        </pre>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                    )}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 px-2">
+                          <Eye className="w-3 h-3 mr-1" />
+                          View Full
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+                        <DialogHeader className="flex-shrink-0">
+                          <DialogTitle>Full Result - {result.function}</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex-1 overflow-auto min-h-0">
+                          <pre className="bg-muted p-4 rounded-md text-sm whitespace-pre-wrap break-words">
+                            {JSON.stringify(result.result, null, 2)}
+                          </pre>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
                 <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
                   {truncateResult(result.result)}

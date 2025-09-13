@@ -7,9 +7,10 @@ import { toast } from "sonner";
 
 interface MapProps {
   project?: any;
+  flowVisualizationData?: any;
 }
 
-const Map = ({ project }: MapProps) => {
+const Map = ({ project, flowVisualizationData }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const { user } = useAuth();
@@ -198,6 +199,111 @@ const Map = ({ project }: MapProps) => {
       resizeObserver.disconnect();
     };
   }, [mapboxToken]);
+
+  // Handle flow visualization
+  useEffect(() => {
+    if (!map.current) return;
+
+    const handleFlowVisualization = () => {
+      // Remove existing flow visualization
+      if (map.current?.getSource('flow-lines')) {
+        map.current.removeLayer('flow-lines');
+        map.current.removeSource('flow-lines');
+      }
+
+      // Add new flow visualization if data exists
+      if (flowVisualizationData?.edges) {
+        const features = flowVisualizationData.edges
+          .filter((edge: any) => edge.geometry && Array.isArray(edge.geometry) && edge.geometry.length > 0)
+          .map((edge: any, index: number) => ({
+            type: "Feature",
+            geometry: {
+              type: "LineString",
+              coordinates: edge.geometry
+            },
+            properties: {
+              id: index,
+              name: edge.name,
+              flow: edge.flow
+            }
+          }));
+
+        if (features.length > 0) {
+          map.current.addSource('flow-lines', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: features
+            }
+          });
+
+          map.current.addLayer({
+            id: 'flow-lines',
+            type: 'line',
+            source: 'flow-lines',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#10b981', // Emerald green
+              'line-width': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                8, 3,
+                16, 8
+              ],
+              'line-opacity': 0.8,
+              'line-blur': 1
+            }
+          });
+
+          // Add a glow effect layer
+          map.current.addLayer({
+            id: 'flow-lines-glow',
+            type: 'line',
+            source: 'flow-lines',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#10b981',
+              'line-width': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                8, 6,
+                16, 12
+              ],
+              'line-opacity': 0.3,
+              'line-blur': 3
+            }
+          }, 'flow-lines'); // Add glow layer below the main line layer
+        }
+      }
+    };
+
+    // Wait for map to be loaded before adding layers
+    if (map.current.isStyleLoaded()) {
+      handleFlowVisualization();
+    } else {
+      map.current.on('style.load', handleFlowVisualization);
+    }
+
+    return () => {
+      if (map.current?.getSource('flow-lines')) {
+        try {
+          map.current.removeLayer('flow-lines-glow');
+          map.current.removeLayer('flow-lines');
+          map.current.removeSource('flow-lines');
+        } catch (error) {
+          console.warn('Error removing flow visualization layers:', error);
+        }
+      }
+    };
+  }, [flowVisualizationData]);
 
   if (loading) {
     return (

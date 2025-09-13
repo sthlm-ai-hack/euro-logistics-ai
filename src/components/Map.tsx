@@ -48,7 +48,7 @@ const Map = () => {
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
+        style: 'mapbox://styles/mapbox/themap',
         projection: 'globe' as any,
         zoom: 1.5,
         center: [0, 20],

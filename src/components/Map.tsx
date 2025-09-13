@@ -5,7 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-const Map = () => {
+interface MapProps {
+  project?: any;
+}
+
+const Map = ({ project }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const { user } = useAuth();
@@ -142,6 +146,21 @@ const Map = () => {
 
       // Start the globe spinning
       spinGlobe();
+
+      // Zoom to Scandinavia after 2 seconds if project is loaded
+      if (project) {
+        setTimeout(() => {
+          if (map.current && !userInteracting) {
+            map.current.easeTo({
+              center: [15, 62], // Scandinavia coordinates
+              zoom: 5,
+              duration: 3000,
+              essential: true
+            });
+            spinEnabled = false; // Stop spinning after zoom
+          }
+        }, 2000);
+      }
     } catch (error) {
       console.error("Map initialization failed:", error);
       // Show fallback message

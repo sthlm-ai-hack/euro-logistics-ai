@@ -45,7 +45,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
     <div className="flex h-full w-full overflow-hidden">
       {/* Main map area */}
       <div className="flex-1 min-w-0 relative">
-        <Map />
+        <Map project={project} />
       </div>
 
       {/* Right sidebar with tabs */}

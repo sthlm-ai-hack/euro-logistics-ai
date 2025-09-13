@@ -39,13 +39,13 @@ const Features = () => {
     <section id="features" className="py-20 px-6 bg-subtle-gradient">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6" style={{ lineHeight: '1.2', paddingBottom: '0.2em' }}>
             Revolutionize Your
-            <span className="block bg-hero-gradient bg-clip-text text-transparent">
+            <span className="block bg-hero-gradient bg-clip-text text-transparent" style={{ paddingBottom: '0.1em' }}>
               Logistics Operations
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto" style={{ lineHeight: '1.7' }}>
             Our AI understands the complexity of European logistics and provides intelligent solutions 
             that adapt to changing conditions in real-time.
           </p>

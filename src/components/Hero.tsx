@@ -9,14 +9,14 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="space-y-4">
-              <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+              <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight" style={{ lineHeight: '1.1', paddingBottom: '0.2em' }}>
                 Intelligent
-                <span className="block bg-hero-gradient bg-clip-text text-transparent">
+                <span className="block bg-hero-gradient bg-clip-text text-transparent" style={{ paddingBottom: '0.1em' }}>
                   Route Planning
                 </span>
                 for Europe
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
+              <p className="text-xl text-muted-foreground leading-relaxed max-w-lg" style={{ lineHeight: '1.7', paddingTop: '0.5em' }}>
                 AI-powered logistics optimization that adapts to real-time changes. 
                 Plan optimal truck routes, manage costs, and respond instantly to disruptions.
               </p>

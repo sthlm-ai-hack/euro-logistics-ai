@@ -22,13 +22,13 @@ const Demo = () => {
     <section id="demo" className="py-20 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6" style={{ lineHeight: '1.2', paddingBottom: '0.2em' }}>
             See RouteAI in
-            <span className="block bg-hero-gradient bg-clip-text text-transparent">
+            <span className="block bg-hero-gradient bg-clip-text text-transparent" style={{ paddingBottom: '0.1em' }}>
               Action
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto" style={{ lineHeight: '1.7' }}>
             Ask questions in natural language and get instant, intelligent responses 
             that help you make better logistics decisions.
           </p>

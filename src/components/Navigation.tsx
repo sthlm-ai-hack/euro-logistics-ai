@@ -45,6 +45,13 @@ const Navigation = () => {
           <div className="flex items-center space-x-3">
             {user ? (
               <>
+                <Button 
+                  variant="hero" 
+                  size="sm" 
+                  onClick={() => window.location.href = '/dashboard'}
+                >
+                  Dashboard
+                </Button>
                 <span className="text-sm text-muted-foreground hidden sm:inline">
                   {user.email}
                 </span>

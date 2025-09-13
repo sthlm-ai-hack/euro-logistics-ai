@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React, { useEffect, useRef, useState } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -27,7 +27,7 @@ const Map = () => {
         .maybeSingle();
 
       if (error) throw error;
-      
+
       if (data?.mapbox_token) {
         setMapboxToken(data.mapbox_token);
       }
@@ -44,12 +44,13 @@ const Map = () => {
 
     // Initialize map
     mapboxgl.accessToken = mapboxToken;
-    
+
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/themap',
-        projection: 'globe' as any,
+        // style: 'mapbox://styles/mapbox/themap',
+        style: "mapbox://styles/willthbill/cmfibt067003y01s4891xcmbg",
+        projection: "globe" as any,
         zoom: 1.5,
         center: [0, 20],
         pitch: 0,
@@ -60,22 +61,22 @@ const Map = () => {
         new mapboxgl.NavigationControl({
           visualizePitch: true,
         }),
-        'top-right'
+        "top-right",
       );
 
       // Add atmosphere and minimal styling
-      map.current.on('style.load', () => {
+      map.current.on("style.load", () => {
         if (map.current) {
           // Set minimal fog for clean appearance
           map.current.setFog({
-            color: 'rgb(250, 250, 250)',
-            'high-color': 'rgb(240, 240, 240)',
-            'horizon-blend': 0.1,
+            color: "rgb(250, 250, 250)",
+            "high-color": "rgb(240, 240, 240)",
+            "horizon-blend": 0.1,
           });
 
           // Customize map colors for black/white theme
-          map.current.setPaintProperty('land', 'background-color', '#ffffff');
-          map.current.setPaintProperty('water', 'fill-color', '#f8f9fa');
+          map.current.setPaintProperty("land", "background-color", "#ffffff");
+          map.current.setPaintProperty("water", "fill-color", "#f8f9fa");
         }
       });
 
@@ -89,7 +90,7 @@ const Map = () => {
       // Spin globe function
       function spinGlobe() {
         if (!map.current) return;
-        
+
         const zoom = map.current.getZoom();
         if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
           let distancePerSecond = 360 / secondsPerRevolution;
@@ -104,33 +105,32 @@ const Map = () => {
       }
 
       // Event listeners for interaction
-      map.current.on('mousedown', () => {
+      map.current.on("mousedown", () => {
         userInteracting = true;
       });
-      
-      map.current.on('dragstart', () => {
+
+      map.current.on("dragstart", () => {
         userInteracting = true;
       });
-      
-      map.current.on('mouseup', () => {
-        userInteracting = false;
-        spinGlobe();
-      });
-      
-      map.current.on('touchend', () => {
+
+      map.current.on("mouseup", () => {
         userInteracting = false;
         spinGlobe();
       });
 
-      map.current.on('moveend', () => {
+      map.current.on("touchend", () => {
+        userInteracting = false;
+        spinGlobe();
+      });
+
+      map.current.on("moveend", () => {
         spinGlobe();
       });
 
       // Start the globe spinning
       spinGlobe();
-
     } catch (error) {
-      console.error('Map initialization failed:', error);
+      console.error("Map initialization failed:", error);
       // Show fallback message
       if (mapContainer.current) {
         mapContainer.current.innerHTML = `
@@ -162,7 +162,9 @@ const Map = () => {
     return (
       <div className="relative w-full h-full flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="text-muted-foreground">Mapbox token not configured</div>
+          <div className="text-muted-foreground">
+            Mapbox token not configured
+          </div>
           <div className="text-sm text-muted-foreground">
             Go to Settings to add your Mapbox public token
           </div>

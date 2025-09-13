@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Send, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,11 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   // Fetch existing messages on component mount
   useEffect(() => {
@@ -57,6 +62,11 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
 
     fetchMessages();
   }, [project.id, toast]);
+
+  // Auto-scroll when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   // Set up real-time subscription
   useEffect(() => {
@@ -213,6 +223,7 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
               </Card>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 

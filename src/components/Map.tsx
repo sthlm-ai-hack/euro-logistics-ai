@@ -147,15 +147,18 @@ const Map = ({ project }: MapProps) => {
       // Start the globe spinning
       spinGlobe();
 
-      // Zoom to Scandinavia after 2 seconds if project is loaded
+      // Zoom to specific bounding box after 2 seconds if project is loaded
       if (project) {
         setTimeout(() => {
           if (map.current && !userInteracting) {
-            map.current.easeTo({
-              center: [15, 62], // Scandinavia coordinates
-              zoom: 5,
+            // Bounding box: (12.1, 55.4, 13.3, 56.0) as (left, bottom, right, top)
+            map.current.fitBounds([
+              [12.1, 55.4], // Southwest coordinates
+              [13.3, 56.0]  // Northeast coordinates
+            ], {
               duration: 3000,
-              essential: true
+              essential: true,
+              padding: 50
             });
             spinEnabled = false; // Stop spinning after zoom
           }

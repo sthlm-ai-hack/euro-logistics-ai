@@ -49,7 +49,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
       </div>
 
       {/* Right sidebar with tabs */}
-      <div className="w-80 flex-shrink-0 border-l bg-background flex flex-col h-full">
+      <div className="w-96 flex-shrink-0 border-l bg-background flex flex-col h-full">
         <div className="p-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-xl font-semibold">{project.title}</h2>

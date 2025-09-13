@@ -160,36 +160,49 @@ export const ProjectChat = ({ project }: ProjectChatProps) => {
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 min-h-0" style={{ height: 'calc(100% - 73px)' }}>
         <div className="p-4 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-            >
-              <Card
-                className={`max-w-[80%] p-3 ${
-                  message.sender === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                }`}
-              >
-                <div className="flex items-start gap-2">
-                  {message.sender === "ai" && (
-                    <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  )}
-                  <div className="text-sm">{message.message}</div>
+          {messages.map((message) => {
+            // Special styling for tool messages
+            if (message.sender === "tool") {
+              return (
+                <div key={message.id} className="flex justify-center">
+                  <div className="text-xs text-muted-foreground/60 text-center">
+                    {message.message}
+                  </div>
                 </div>
-                <div
-                  className={`text-xs mt-1 ${
+              );
+            }
+
+            return (
+              <div
+                key={message.id}
+                className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <Card
+                  className={`max-w-[80%] p-3 ${
                     message.sender === "user"
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
                   }`}
                 >
-                  {new Date(message.created_at).toLocaleTimeString()}
-                </div>
-              </Card>
-            </div>
-          ))}
+                  <div className="flex items-start gap-2">
+                    {message.sender === "ai" && (
+                      <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    )}
+                    <div className="text-sm">{message.message}</div>
+                  </div>
+                  <div
+                    className={`text-xs mt-1 ${
+                      message.sender === "user"
+                        ? "text-primary-foreground/70"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {new Date(message.created_at).toLocaleTimeString()}
+                  </div>
+                </Card>
+              </div>
+            );
+          })}
           {isLoading && (
             <div className="flex justify-start">
               <Card className="bg-muted p-3">

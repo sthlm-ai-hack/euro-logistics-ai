@@ -1,6 +1,7 @@
 import { Bot, Clock, Calendar, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Map from "@/components/Map";
 import type { Project } from "@/pages/Dashboard";
 
 interface ProjectViewProps {
@@ -37,101 +38,90 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
   const isAwaitingAi = !!project.is_awaiting_ai;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">{project.title}</h1>
-        <div className="flex gap-2">
-          {isAiResponding && (
-            <Badge variant="secondary" className="text-sm">
-              <Bot className="w-4 h-4 mr-2" />
-              AI Responding
-            </Badge>
-          )}
-          {isAwaitingAi && (
-            <Badge variant="outline" className="text-sm">
-              <Clock className="w-4 h-4 mr-2" />
-              Awaiting AI Response
-            </Badge>
-          )}
-        </div>
+    <div className="flex h-full">
+      {/* Main map area */}
+      <div className="flex-1 relative">
+        <Map />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Project Details
+      {/* Right sidebar with project details */}
+      <div className="w-80 border-l bg-background p-4 space-y-4 overflow-y-auto">
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold">{project.title}</h2>
+          <div className="flex flex-col gap-2">
+            {isAiResponding && (
+              <Badge variant="secondary" className="text-xs w-fit">
+                <Bot className="w-3 h-3 mr-1" />
+                AI Responding
+              </Badge>
+            )}
+            {isAwaitingAi && (
+              <Badge variant="outline" className="text-xs w-fit">
+                <Clock className="w-3 h-3 mr-1" />
+                Awaiting AI
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        <Card className="border-0 shadow-none bg-muted/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Details
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 text-xs">
             <div>
-              <div className="text-sm font-medium text-muted-foreground">Created</div>
-              <div className="text-sm">{formatDate(project.created_at)}</div>
+              <div className="font-medium text-muted-foreground">Created</div>
+              <div>{formatDate(project.created_at)}</div>
             </div>
             <div>
-              <div className="text-sm font-medium text-muted-foreground">Last Updated</div>
-              <div className="text-sm">{formatDate(project.updated_at)}</div>
+              <div className="font-medium text-muted-foreground">Updated</div>
+              <div>{formatDate(project.updated_at)}</div>
             </div>
             <div>
-              <div className="text-sm font-medium text-muted-foreground">Project ID</div>
-              <div className="text-sm font-mono text-xs">{project.id}</div>
+              <div className="font-medium text-muted-foreground">ID</div>
+              <div className="font-mono break-all">{project.id}</div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bot className="w-5 h-5" />
+        <Card className="border-0 shadow-none bg-muted/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Bot className="w-4 h-4" />
               AI Status
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 text-xs">
             <div>
-              <div className="text-sm font-medium text-muted-foreground">AI Responding</div>
+              <div className="font-medium text-muted-foreground">AI Responding</div>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isAiResponding ? 'bg-green-500' : 'bg-gray-300'}`} />
-                <span className="text-sm">
-                  {isAiResponding ? 'Active' : 'Inactive'}
-                </span>
-                {isAiResponding && project.is_ai_responding && (
-                  <span className="text-xs text-muted-foreground">
-                    (since {formatDate(project.is_ai_responding)})
-                  </span>
-                )}
+                <div className={`w-2 h-2 rounded-full ${isAiResponding ? 'bg-green-500' : 'bg-muted-foreground/30'}`} />
+                <span>{isAiResponding ? 'Active' : 'Inactive'}</span>
               </div>
+              {isAiResponding && project.is_ai_responding && (
+                <div className="text-muted-foreground">
+                  Since {formatDate(project.is_ai_responding)}
+                </div>
+              )}
             </div>
             <div>
-              <div className="text-sm font-medium text-muted-foreground">Awaiting AI</div>
+              <div className="font-medium text-muted-foreground">Awaiting AI</div>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isAwaitingAi ? 'bg-yellow-500' : 'bg-gray-300'}`} />
-                <span className="text-sm">
-                  {isAwaitingAi ? 'Waiting' : 'Not waiting'}
-                </span>
-                {isAwaitingAi && project.is_awaiting_ai && (
-                  <span className="text-xs text-muted-foreground">
-                    (since {formatDate(project.is_awaiting_ai)})
-                  </span>
-                )}
+                <div className={`w-2 h-2 rounded-full ${isAwaitingAi ? 'bg-yellow-500' : 'bg-muted-foreground/30'}`} />
+                <span>{isAwaitingAi ? 'Waiting' : 'Not waiting'}</span>
               </div>
+              {isAwaitingAi && project.is_awaiting_ai && (
+                <div className="text-muted-foreground">
+                  Since {formatDate(project.is_awaiting_ai)}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-muted-foreground">
-            This is where you can add more project-specific content, such as tasks, 
-            files, or other project-related information. The project management system 
-            is ready for your custom features.
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

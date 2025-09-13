@@ -13,6 +13,22 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Open Sans', 'system-ui', 'sans-serif'],
+      },
+      backgroundImage: {
+        'hero-gradient': 'var(--hero-gradient)',
+        'subtle-gradient': 'var(--subtle-gradient)',
+      },
+      boxShadow: {
+        'soft': 'var(--shadow-soft)',
+        'medium': 'var(--shadow-medium)',
+        'large': 'var(--shadow-large)',
+      },
+      transitionProperty: {
+        'smooth': 'var(--transition-smooth)',
+        'bounce': 'var(--transition-bounce)',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

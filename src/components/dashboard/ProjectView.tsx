@@ -40,14 +40,14 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
   const isAwaitingAi = !!project.is_awaiting_ai;
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full w-full overflow-hidden">
       {/* Main map area */}
-      <div className="flex-1 relative">
+      <div className="flex-1 min-w-0 relative">
         <Map />
       </div>
 
       {/* Right sidebar with tabs */}
-      <div className="w-80 border-l bg-background flex flex-col h-full">
+      <div className="w-80 flex-shrink-0 border-l bg-background flex flex-col h-full">
         <div className="p-4 border-b flex-shrink-0">
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">{project.title}</h2>

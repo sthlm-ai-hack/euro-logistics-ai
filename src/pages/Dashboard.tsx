@@ -133,15 +133,15 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background light">
+    <div className="h-screen w-screen flex flex-col bg-background light overflow-hidden">
       <DashboardHeader 
         selectedProject={selectedProject} 
         onToggleSidebar={() => setSidebarOpen(true)}
         sidebarOpen={sidebarOpen}
       />
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 min-w-0">
         {sidebarOpen && (
-          <div className="w-80 border-r border-border bg-card/50 flex flex-col">
+          <div className="w-80 flex-shrink-0 border-r border-border bg-card/50 flex flex-col">
             <ProjectSidebar
               projects={projects}
               selectedProject={selectedProject}
@@ -154,7 +154,7 @@ const Dashboard = () => {
             />
           </div>
         )}
-        <main className="flex-1 min-h-0">
+        <main className="flex-1 min-h-0 min-w-0">
           <ProjectView project={selectedProject} />
         </main>
       </div>

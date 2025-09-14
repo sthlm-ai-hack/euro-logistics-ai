@@ -9,9 +9,10 @@ interface MapProps {
   project?: any;
   flowVisualizationData?: any;
   changedNodes?: any[];
+  changedEdges?: any[];
 }
 
-const Map = ({ project, flowVisualizationData, changedNodes }: MapProps) => {
+const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const { user } = useAuth();
@@ -516,6 +517,102 @@ const Map = ({ project, flowVisualizationData, changedNodes }: MapProps) => {
       }
     };
   }, [changedNodes]);
+
+  // Add changed edges visualization
+  useEffect(() => {
+    if (!map.current || !changedEdges?.length) return;
+
+    const mapInstance = map.current;
+
+    // Create GeoJSON for changed edges
+    const edgesGeoJSON = {
+      type: 'FeatureCollection' as const,
+      features: changedEdges.map((edge) => ({
+        type: 'Feature' as const,
+        properties: {
+          id: edge.id,
+          osm_id: edge.osm_id,
+          cost: edge.cost,
+          cap: edge.cap,
+          color: edge.color,
+        },
+        geometry: {
+          type: 'LineString' as const,
+          coordinates: edge.coordinates || []
+        }
+      }))
+    };
+
+    const sourceId = 'changed-edges';
+    const layerId = 'changed-edges-layer';
+
+    // Add source and layer
+    if (!mapInstance.getSource(sourceId)) {
+      mapInstance.addSource(sourceId, {
+        type: 'geojson',
+        data: edgesGeoJSON
+      });
+
+      mapInstance.addLayer({
+        id: layerId,
+        type: 'line',
+        source: sourceId,
+        paint: {
+          'line-color': ['get', 'color'],
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            5, 2,
+            10, 4,
+            15, 6
+          ],
+          'line-opacity': 0.8
+        }
+      });
+
+      // Add hover effects
+      mapInstance.on('mouseenter', layerId, () => {
+        mapInstance.getCanvas().style.cursor = 'pointer';
+      });
+
+      mapInstance.on('mouseleave', layerId, () => {
+        mapInstance.getCanvas().style.cursor = '';
+      });
+
+      mapInstance.on('click', layerId, (e) => {
+        if (e.features && e.features.length > 0) {
+          const feature = e.features[0];
+          const props = feature.properties;
+          
+          new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+              <div class="p-2">
+                <div class="font-semibold">${props?.osm_id || 'Unknown Edge'}</div>
+                <div class="text-sm text-gray-600">Cost: ${props?.cost || 'N/A'}</div>
+                <div class="text-sm text-gray-600">Capacity: ${props?.cap || 'N/A'}</div>
+              </div>
+            `)
+            .addTo(mapInstance);
+        }
+      });
+    } else {
+      // Update existing source
+      const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
+      source.setData(edgesGeoJSON);
+    }
+
+    // Cleanup function
+    return () => {
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.removeLayer(layerId);
+      }
+      if (mapInstance.getSource(sourceId)) {
+        mapInstance.removeSource(sourceId);
+      }
+    };
+  }, [changedEdges]);
 
   if (loading) {
     return (

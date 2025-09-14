@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      changed_edges: {
+        Row: {
+          cap: number
+          color: string
+          coordinates: Json
+          cost: number
+          created_at: string
+          id: string
+          osm_id: string
+          project_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cap: number
+          color: string
+          coordinates: Json
+          cost: number
+          created_at?: string
+          id?: string
+          osm_id: string
+          project_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cap?: number
+          color?: string
+          coordinates?: Json
+          cost?: number
+          created_at?: string
+          id?: string
+          osm_id?: string
+          project_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       changed_nodes: {
         Row: {
           color: string

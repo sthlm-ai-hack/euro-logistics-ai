@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, Clock, Calendar, MessageSquare, Info, Calculator, MapPin } from "lucide-react";
+import { Bot, Clock, Calendar, MessageSquare, Info, Calculator, MapPin, Route } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +8,7 @@ import Map from "@/components/Map";
 import { ProjectChat } from "./ProjectChat";
 import { ComputeResults } from "./ComputeResults";
 import { ChangedNodes } from "./ChangedNodes";
+import { ChangedEdges } from "./ChangedEdges";
 import { supabase } from "@/integrations/supabase/client";
 import type { Project } from "@/pages/Dashboard";
 
@@ -39,12 +40,30 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
     enabled: !!project?.id,
   });
 
-  // Set up real-time subscription for changed nodes
+  // Fetch changed edges for the current project
+  const { data: changedEdges = [] } = useQuery({
+    queryKey: ["changed-edges", project?.id],
+    queryFn: async () => {
+      if (!project?.id) return [];
+      
+      const { data, error } = await supabase
+        .from("changed_edges")
+        .select("*")
+        .eq("project_id", project.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!project?.id,
+  });
+
+  // Set up real-time subscription for changed nodes and edges
   useEffect(() => {
     if (!project?.id) return;
 
     const channel = supabase
-      .channel('changed-nodes-realtime')
+      .channel('changed-data-realtime')
       .on(
         'postgres_changes',
         {
@@ -56,6 +75,19 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
         (payload) => {
           // Invalidate and refetch the changed nodes query
           queryClient.invalidateQueries({ queryKey: ["changed-nodes", project.id] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'changed_edges',
+          filter: `project_id=eq.${project.id}`
+        },
+        (payload) => {
+          // Invalidate and refetch the changed edges query
+          queryClient.invalidateQueries({ queryKey: ["changed-edges", project.id] });
         }
       )
       .subscribe();
@@ -147,11 +179,11 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
     <div className="flex h-full w-full overflow-hidden">
       {/* Main map area */}
       <div className="flex-1 min-w-0 relative">
-        <Map project={project} flowVisualizationData={flowVisualizationData} changedNodes={changedNodes} />
+        <Map project={project} flowVisualizationData={flowVisualizationData} changedNodes={changedNodes} changedEdges={changedEdges} />
       </div>
 
       {/* Right sidebar with tabs */}
-      <div className="w-96 flex-shrink-0 border-l bg-background flex flex-col h-full">
+      <div className="w-[28rem] flex-shrink-0 border-l bg-background flex flex-col h-full">
         <div className="p-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-xl font-semibold">{project.title}</h2>
@@ -173,7 +205,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
         </div>
 
         <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-4 mx-auto mt-2 mb-0 max-w-lg flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-5 mx-auto mt-2 mb-0 max-w-2xl flex-shrink-0">
             <TabsTrigger value="details" className="flex items-center gap-2">
               <Info className="w-4 h-4" />
               Details
@@ -189,6 +221,10 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
             <TabsTrigger value="nodes" className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               Nodes
+            </TabsTrigger>
+            <TabsTrigger value="edges" className="flex items-center gap-2">
+              <Route className="w-4 h-4" />
+              Edges
             </TabsTrigger>
           </TabsList>
 
@@ -266,6 +302,10 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
 
           <TabsContent value="nodes" className="flex-1 overflow-y-auto mt-4 px-4">
             <ChangedNodes projectId={project.id} />
+          </TabsContent>
+
+          <TabsContent value="edges" className="flex-1 overflow-y-auto mt-4 px-4">
+            <ChangedEdges projectId={project.id} />
           </TabsContent>
         </Tabs>
       </div>

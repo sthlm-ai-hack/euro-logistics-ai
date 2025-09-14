@@ -4,6 +4,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MapProps {
   project?: any;
@@ -20,6 +22,7 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
   const [loading, setLoading] = useState(true);
   const [nodesData, setNodesData] = useState<any[]>([]);
   const [edgesData, setEdgesData] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch mapbox token
   useEffect(() => {
@@ -59,6 +62,7 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
   const fetchNodesAndEdges = async () => {
     try {
       console.log('Fetching nodes and edges for project:', project?.id);
+      setRefreshing(true);
       
       // Fetch nodes
       const { data: nodes, error: nodesError } = await supabase
@@ -79,9 +83,32 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
       console.log('Fetched data:', { nodes: nodes?.length || 0, edges: edges?.length || 0 });
       setNodesData(nodes || []);
       setEdgesData(edges || []);
+      toast.success("Map data refreshed");
     } catch (error) {
       console.error("Error fetching nodes and edges:", error);
       toast.error("Failed to load map data");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    if (project?.id) {
+      fetchNodesAndEdges();
+      // Force re-render of flows by triggering the effect
+      if (map.current && flowVisualizationData?.edges) {
+        // Clear and re-add flows
+        if (map.current.getSource('flow-lines')) {
+          if (map.current.getLayer('flow-lines-glow')) {
+            map.current.removeLayer('flow-lines-glow');
+          }
+          if (map.current.getLayer('flow-lines')) {
+            map.current.removeLayer('flow-lines');
+          }
+          map.current.removeSource('flow-lines');
+        }
+        // The useEffect for flows will re-trigger and re-add them
+      }
     }
   };
 
@@ -555,6 +582,19 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="absolute inset-0" />
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-background/5 to-transparent" />
+      
+      {/* Refresh button */}
+      <div className="absolute top-4 left-4 z-10 pointer-events-auto">
+        <Button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          size="sm"
+          variant="outline"
+          className="bg-background/90 backdrop-blur-sm hover:bg-background/95"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
     </div>
   );
 };

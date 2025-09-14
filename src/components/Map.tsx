@@ -532,63 +532,68 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
 
     const mapInstance = map.current;
 
-    // Create GeoJSON for changed edges
-    const edgesGeoJSON = {
-      type: 'FeatureCollection' as const,
-      features: changedEdges.map((edge) => ({
-        type: 'Feature' as const,
-        properties: {
-          id: edge.id,
-          osm_id: edge.osm_id,
-          cost: edge.cost,
-          cap: edge.cap,
-          color: edge.color,
-        },
-        geometry: {
-          type: 'LineString' as const,
-          coordinates: edge.coordinates || []
-        }
-      }))
-    };
+    const handleChangedEdgesVisualization = () => {
+      // Remove existing changed edges visualization
+      if (mapInstance.getLayer('changed-edges-layer')) {
+        mapInstance.removeLayer('changed-edges-layer');
+      }
+      if (mapInstance.getSource('changed-edges')) {
+        mapInstance.removeSource('changed-edges');
+      }
 
-    const sourceId = 'changed-edges';
-    const layerId = 'changed-edges-layer';
+      // Create GeoJSON for changed edges
+      const edgesGeoJSON = {
+        type: 'FeatureCollection' as const,
+        features: changedEdges.map((edge) => ({
+          type: 'Feature' as const,
+          properties: {
+            id: edge.id,
+            osm_id: edge.osm_id,
+            cost: edge.cost,
+            cap: edge.cap,
+            color: edge.color,
+          },
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: edge.coordinates || []
+          }
+        }))
+      };
 
-    // Add source and layer
-    if (!mapInstance.getSource(sourceId)) {
-      mapInstance.addSource(sourceId, {
+      // Add source and layer
+      mapInstance.addSource('changed-edges', {
         type: 'geojson',
         data: edgesGeoJSON
       });
 
       mapInstance.addLayer({
-        id: layerId,
+        id: 'changed-edges-layer',
         type: 'line',
-        source: sourceId,
+        source: 'changed-edges',
         paint: {
           'line-color': ['get', 'color'],
           'line-width': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            5, 2,
-            10, 4,
-            15, 6
+            5, 4,
+            10, 6,
+            15, 8
           ],
-          'line-opacity': 0.8
+          'line-opacity': 0.9
         }
       });
 
       // Add hover effects
-      mapInstance.on('mouseenter', layerId, () => {
+      mapInstance.on('mouseenter', 'changed-edges-layer', () => {
         mapInstance.getCanvas().style.cursor = 'pointer';
       });
 
-      mapInstance.on('mouseleave', layerId, () => {
+      mapInstance.on('mouseleave', 'changed-edges-layer', () => {
         mapInstance.getCanvas().style.cursor = '';
       });
 
-      mapInstance.on('click', layerId, (e) => {
+      mapInstance.on('click', 'changed-edges-layer', (e) => {
         if (e.features && e.features.length > 0) {
           const feature = e.features[0];
           const props = feature.properties;
@@ -605,19 +610,22 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
             .addTo(mapInstance);
         }
       });
+    };
+
+    // Wait for map to be loaded before adding layers
+    if (mapInstance.isStyleLoaded()) {
+      handleChangedEdgesVisualization();
     } else {
-      // Update existing source
-      const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
-      source.setData(edgesGeoJSON);
+      mapInstance.on('style.load', handleChangedEdgesVisualization);
     }
 
     // Cleanup function
     return () => {
-      if (mapInstance.getLayer(layerId)) {
-        mapInstance.removeLayer(layerId);
+      if (mapInstance.getLayer('changed-edges-layer')) {
+        mapInstance.removeLayer('changed-edges-layer');
       }
-      if (mapInstance.getSource(sourceId)) {
-        mapInstance.removeSource(sourceId);
+      if (mapInstance.getSource('changed-edges')) {
+        mapInstance.removeSource('changed-edges');
       }
     };
   }, [changedEdges]);

@@ -5,7 +5,15 @@ import { EdgesVisualizationProps } from "./types";
 export const EdgesVisualization = ({ map, data: displayEdges }: EdgesVisualizationProps) => {
   // Add changed edges visualization with better error handling
   useEffect(() => {
-    if (!map.current) return;
+    console.log('EdgesVisualization useEffect triggered', {
+      mapExists: !!map.current,
+      dataLength: displayEdges?.length || 0
+    });
+    
+    if (!map.current) {
+      console.log('Map not ready for edges visualization');
+      return;
+    }
 
     const mapInstance = map.current;
 

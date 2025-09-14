@@ -142,6 +142,7 @@ export const MapContainer = ({ mapboxToken, project, onMapReady }: MapContainerP
       }
 
       // Notify parent component that map is ready
+      console.log('Map initialized, notifying parent');
       onMapReady(map);
 
     } catch (error) {

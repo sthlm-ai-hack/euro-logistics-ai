@@ -12,7 +12,15 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
   const { displayNodes, displayEdges } = useRealtimeData(project, changedNodes, changedEdges);
   const [map, setMap] = useState<MapRef>({ current: null });
 
+  console.log('Map component render', {
+    project: project?.id,
+    displayNodes: displayNodes?.length || 0,
+    displayEdges: displayEdges?.length || 0,
+    mapReady: !!map.current
+  });
+
   const handleMapReady = (mapRef: MapRef) => {
+    console.log('Map ready callback received', { mapRef: !!mapRef.current });
     setMap(mapRef);
   };
 
@@ -46,9 +54,13 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
         project={project} 
         onMapReady={handleMapReady}
       />
-      <FlowVisualization map={map} data={flowVisualizationData} />
-      <NodesVisualization map={map} data={displayNodes} />
-      <EdgesVisualization map={map} data={displayEdges} />
+      {map.current && (
+        <>
+          <FlowVisualization map={map} data={flowVisualizationData} />
+          <NodesVisualization map={map} data={displayNodes} />
+          <EdgesVisualization map={map} data={displayEdges} />
+        </>
+      )}
     </>
   );
 };

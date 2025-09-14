@@ -5,7 +5,15 @@ import { NodesVisualizationProps } from "./types";
 export const NodesVisualization = ({ map, data: displayNodes }: NodesVisualizationProps) => {
   // Handle changed nodes visualization
   useEffect(() => {
-    if (!map.current) return;
+    console.log('NodesVisualization useEffect triggered', {
+      mapExists: !!map.current,
+      dataLength: displayNodes?.length || 0
+    });
+    
+    if (!map.current) {
+      console.log('Map not ready for nodes visualization');
+      return;
+    }
 
     const handleChangedNodesVisualization = () => {
       // Remove existing changed nodes visualization

@@ -444,9 +444,9 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
                 'interpolate',
                 ['linear'],
                 ['*', ['get', 'supply'], -1], // Use absolute value
-                0, 0.3,
-                100, 0.6,
-                1000, 1.2
+                0, 0.6,
+                100, 1.0,
+                1000, 1.8
               ],
               'icon-allow-overlap': true
             },

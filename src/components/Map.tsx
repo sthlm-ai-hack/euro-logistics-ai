@@ -400,13 +400,13 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
                 'interpolate',
                 ['linear'],
                 ['get', 'supply'],
-                0, 15,
-                100, 36,
-                1000, 75
+                0, 7.5,
+                100, 18,
+                1000, 37.5
               ],
               'circle-color': ['get', 'color'],
               'circle-opacity': 0.3,
-              'circle-stroke-width': 6,
+              'circle-stroke-width': 3,
               'circle-stroke-color': '#ffffff',
               'circle-stroke-opacity': 0.3
             }
@@ -414,21 +414,21 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
 
           // Create and add square marker image for negative supply nodes using canvas
           const canvas = document.createElement('canvas');
-          canvas.width = 60;
-          canvas.height = 60;
+          canvas.width = 30;
+          canvas.height = 30;
           const ctx = canvas.getContext('2d');
           if (ctx) {
             // Use a default color if no features exist yet
             const defaultColor = features.find(f => f?.properties?.color)?.properties?.color || '#ef4444';
             ctx.fillStyle = defaultColor;
             ctx.globalAlpha = 0.3;
-            ctx.fillRect(6, 6, 48, 48);
+            ctx.fillRect(3, 3, 24, 24);
             ctx.globalAlpha = 0.3;
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 6;
-            ctx.strokeRect(6, 6, 48, 48);
+            ctx.lineWidth = 3;
+            ctx.strokeRect(3, 3, 24, 24);
             
-            const imageData = ctx.getImageData(0, 0, 60, 60);
+            const imageData = ctx.getImageData(0, 0, 30, 30);
             if (!map.current?.hasImage('square-marker')) {
               map.current?.addImage('square-marker', imageData);
             }
@@ -446,9 +446,9 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
                 'interpolate',
                 ['linear'],
                 ['*', ['get', 'supply'], -1], // Use absolute value
-                0, 1.8,
-                100, 3.0,
-                1000, 5.4
+                0, 0.9,
+                100, 1.5,
+                1000, 2.7
               ],
               'icon-allow-overlap': true
             },

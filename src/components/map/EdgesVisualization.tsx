@@ -177,12 +177,12 @@ export const EdgesVisualization = ({ map, data: displayEdges }: EdgesVisualizati
     // Cleanup function
     return () => {
       try {
-        // Check if style is loaded and map exists before cleanup
-        if (mapInstance && mapInstance.isStyleLoaded()) {
-          if (mapInstance.getLayer('changed-edges-layer')) {
-            mapInstance.removeLayer('changed-edges-layer');
-          }
+        // Check if map exists and has the necessary methods before cleanup
+        if (mapInstance && mapInstance.getSource && mapInstance.isStyleLoaded && mapInstance.isStyleLoaded()) {
           if (mapInstance.getSource('changed-edges')) {
+            if (mapInstance.getLayer('changed-edges-layer')) {
+              mapInstance.removeLayer('changed-edges-layer');
+            }
             mapInstance.removeSource('changed-edges');
           }
         }

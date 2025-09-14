@@ -121,14 +121,20 @@ export const FlowVisualization = ({ map, data: flowVisualizationData }: FlowVisu
     }
 
     return () => {
-      if (map.current?.getSource('flow-lines')) {
-        try {
-          map.current.removeLayer('flow-lines-glow');
-          map.current.removeLayer('flow-lines');
-          map.current.removeSource('flow-lines');
-        } catch (error) {
-          console.warn('Error removing flow visualization layers:', error);
+      try {
+        if (map.current && map.current.getSource) {
+          if (map.current.getSource('flow-lines')) {
+            if (map.current.getLayer('flow-lines-glow')) {
+              map.current.removeLayer('flow-lines-glow');
+            }
+            if (map.current.getLayer('flow-lines')) {
+              map.current.removeLayer('flow-lines');
+            }
+            map.current.removeSource('flow-lines');
+          }
         }
+      } catch (error) {
+        console.warn('Error removing flow visualization layers:', error);
       }
     };
   }, [flowVisualizationData, map]);

@@ -169,18 +169,20 @@ export const NodesVisualization = ({ map, data: displayNodes }: NodesVisualizati
     }
 
     return () => {
-      if (map.current?.getSource('changed-nodes')) {
-        try {
-          if (map.current.getLayer('changed-nodes-positive')) {
-            map.current.removeLayer('changed-nodes-positive');
+      try {
+        if (map.current && map.current.getSource) {
+          if (map.current.getSource('changed-nodes')) {
+            if (map.current.getLayer('changed-nodes-positive')) {
+              map.current.removeLayer('changed-nodes-positive');
+            }
+            if (map.current.getLayer('changed-nodes-negative')) {
+              map.current.removeLayer('changed-nodes-negative');
+            }
+            map.current.removeSource('changed-nodes');
           }
-          if (map.current.getLayer('changed-nodes-negative')) {
-            map.current.removeLayer('changed-nodes-negative');
-          }
-          map.current.removeSource('changed-nodes');
-        } catch (error) {
-          console.warn('Error removing changed nodes visualization:', error);
         }
+      } catch (error) {
+        console.warn('Error removing changed nodes visualization:', error);
       }
     };
   }, [displayNodes, map]);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Bot, Clock, Calendar, MessageSquare, Info, Calculator, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import Map from "@/components/Map";
 import { ProjectChat } from "./ProjectChat";
 import { ComputeResults } from "./ComputeResults";
 import { ChangedNodes } from "./ChangedNodes";
+import { supabase } from "@/integrations/supabase/client";
 import type { Project } from "@/pages/Dashboard";
 
 interface ProjectViewProps {
@@ -17,6 +19,24 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
   const [activeFlowVisualization, setActiveFlowVisualization] = useState<string | null>(null);
   const [flowVisualizationData, setFlowVisualizationData] = useState<any | null>(null);
   const [hasSetDefault, setHasSetDefault] = useState(false);
+
+  // Fetch changed nodes for the current project
+  const { data: changedNodes = [] } = useQuery({
+    queryKey: ["changed-nodes", project?.id],
+    queryFn: async () => {
+      if (!project?.id) return [];
+      
+      const { data, error } = await supabase
+        .from("changed_nodes")
+        .select("*")
+        .eq("project_id", project.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!project?.id,
+  });
 
   // Load default visualization on project change
   useEffect(() => {
@@ -100,7 +120,7 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
     <div className="flex h-full w-full overflow-hidden">
       {/* Main map area */}
       <div className="flex-1 min-w-0 relative">
-        <Map project={project} flowVisualizationData={flowVisualizationData} />
+        <Map project={project} flowVisualizationData={flowVisualizationData} changedNodes={changedNodes} />
       </div>
 
       {/* Right sidebar with tabs */}

@@ -8,9 +8,10 @@ import { toast } from "sonner";
 interface MapProps {
   project?: any;
   flowVisualizationData?: any;
+  changedNodes?: any[];
 }
 
-const Map = ({ project, flowVisualizationData }: MapProps) => {
+const Map = ({ project, flowVisualizationData, changedNodes }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const { user } = useAuth();
@@ -330,6 +331,149 @@ const Map = ({ project, flowVisualizationData }: MapProps) => {
       }
     };
   }, [flowVisualizationData]);
+
+  // Handle changed nodes visualization
+  useEffect(() => {
+    if (!map.current) return;
+
+    const handleChangedNodesVisualization = () => {
+      // Remove existing changed nodes visualization
+      if (map.current?.getSource('changed-nodes')) {
+        if (map.current.getLayer('changed-nodes')) {
+          map.current.removeLayer('changed-nodes');
+        }
+        map.current.removeSource('changed-nodes');
+      }
+
+      // Add popup for hover functionality
+      let popup: mapboxgl.Popup | null = null;
+
+      // Add new changed nodes visualization if data exists
+      if (changedNodes && changedNodes.length > 0) {
+        const features = changedNodes
+          .filter(node => node.coordinates)
+          .map(node => {
+            let coordinates;
+            if (node.coordinates.lat !== undefined && node.coordinates.lon !== undefined) {
+              coordinates = [node.coordinates.lon, node.coordinates.lat];
+            } else if (Array.isArray(node.coordinates) && node.coordinates.length === 2) {
+              coordinates = [node.coordinates[0], node.coordinates[1]];
+            } else {
+              return null;
+            }
+
+            return {
+              type: "Feature" as const,
+              geometry: {
+                type: "Point" as const,
+                coordinates
+              },
+              properties: {
+                id: node.id,
+                name: node.name,
+                supply: node.supply,
+                color: node.color,
+                osm_id: node.osm_id
+              }
+            };
+          })
+          .filter(Boolean);
+
+        if (features.length > 0) {
+          map.current.addSource('changed-nodes', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection' as const,
+              features
+            }
+          });
+
+          map.current.addLayer({
+            id: 'changed-nodes',
+            type: 'circle',
+            source: 'changed-nodes',
+            paint: {
+              'circle-radius': [
+                'interpolate',
+                ['linear'],
+                ['get', 'supply'],
+                0, 8,
+                100, 20,
+                1000, 40
+              ],
+              'circle-color': ['get', 'color'],
+              'circle-opacity': 0.8,
+              'circle-stroke-width': 2,
+              'circle-stroke-color': '#ffffff',
+              'circle-stroke-opacity': 1
+            }
+          });
+
+          // Add hover functionality
+          const handleMouseEnter = (e: mapboxgl.MapMouseEvent) => {
+            if (!map.current || !e.features?.[0]) return;
+            
+            map.current.getCanvas().style.cursor = 'pointer';
+            
+            const coordinates = (e.features[0].geometry as any).coordinates.slice();
+            const { name, supply, osm_id } = e.features[0].properties as any;
+            
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+              coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+            
+            popup = new mapboxgl.Popup()
+              .setLngLat(coordinates)
+              .setHTML(`
+                <div class="p-2">
+                  <div class="font-semibold text-sm">${name}</div>
+                  <div class="text-xs text-gray-600 mb-1">OSM: ${osm_id}</div>
+                  <div class="text-xs"><strong>Supply:</strong> ${supply.toFixed(2)}</div>
+                </div>
+              `)
+              .addTo(map.current);
+          };
+
+          const handleMouseLeave = () => {
+            if (!map.current) return;
+            
+            map.current.getCanvas().style.cursor = '';
+            
+            if (popup) {
+              popup.remove();
+              popup = null;
+            }
+          };
+
+          map.current.on('mouseenter', 'changed-nodes', handleMouseEnter);
+          map.current.on('mouseleave', 'changed-nodes', handleMouseLeave);
+        }
+      }
+    };
+
+    // Wait for map to be loaded before adding layers
+    if (map.current.isStyleLoaded()) {
+      handleChangedNodesVisualization();
+    } else {
+      map.current.on('style.load', handleChangedNodesVisualization);
+    }
+
+    return () => {
+      if (map.current?.getSource('changed-nodes')) {
+        try {
+          if (map.current.getLayer('changed-nodes')) {
+            map.current.removeLayer('changed-nodes');
+          }
+          map.current.removeSource('changed-nodes');
+        } catch (error) {
+          console.warn('Error removing changed nodes visualization:', error);
+        }
+      }
+    };
+  }, [changedNodes]);
 
   if (loading) {
     return (

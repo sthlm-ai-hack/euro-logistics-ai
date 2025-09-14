@@ -256,16 +256,16 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
               'line-cap': 'round'
             },
             paint: {
-              'line-color': '#e2e8f0', // Subtle gray
+              'line-color': '#10b981', // Emerald green
               'line-width': [
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                8, 1.5,
-                16, 3
+                8, 15,  // 5x wider
+                16, 40  // 5x wider
               ],
-              'line-opacity': 0.6,
-              'line-blur': 0.5
+              'line-opacity': 0.4, // More transparent
+              'line-blur': 1
             }
           });
 
@@ -279,16 +279,16 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
               'line-cap': 'round'
             },
             paint: {
-              'line-color': '#f1f5f9',
+              'line-color': '#10b981',
               'line-width': [
                 'interpolate',
                 ['linear'],
                 ['zoom'],
-                8, 3,
-                16, 6
+                8, 30,  // 5x wider
+                16, 60  // 5x wider
               ],
-              'line-opacity': 0.3,
-              'line-blur': 2
+              'line-opacity': 0.15, // More transparent
+              'line-blur': 3
             }
           }, 'flow-lines'); // Add glow layer below the main line layer
 
@@ -400,15 +400,15 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
                 'interpolate',
                 ['linear'],
                 ['get', 'supply'],
-                0, 3,
-                100, 6,
-                1000, 12
+                0, 5,
+                100, 12,
+                1000, 25
               ],
-              'circle-color': '#94a3b8',
-              'circle-opacity': 0.7,
-              'circle-stroke-width': 1,
-              'circle-stroke-color': '#f8fafc',
-              'circle-stroke-opacity': 0.8
+              'circle-color': ['get', 'color'],
+              'circle-opacity': 0.8,
+              'circle-stroke-width': 2,
+              'circle-stroke-color': '#ffffff',
+              'circle-stroke-opacity': 1
             }
           });
 
@@ -418,10 +418,11 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
           canvas.height = 20;
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            // Use subtle gray color for squares
-            ctx.fillStyle = '#94a3b8';
+            // Use a default color if no features exist yet
+            const defaultColor = features.find(f => f?.properties?.color)?.properties?.color || '#ef4444';
+            ctx.fillStyle = defaultColor;
             ctx.fillRect(2, 2, 16, 16);
-            ctx.strokeStyle = '#f8fafc';
+            ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2;
             ctx.strokeRect(2, 2, 16, 16);
             
@@ -443,14 +444,14 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
                 'interpolate',
                 ['linear'],
                 ['*', ['get', 'supply'], -1], // Use absolute value
-                0, 0.4,
-                100, 0.6,
-                1000, 1.0
+                0, 0.6,
+                100, 1.0,
+                1000, 1.8
               ],
               'icon-allow-overlap': true
             },
             paint: {
-              'icon-opacity': 0.6
+              'icon-opacity': 0.8
             }
           });
 
@@ -570,16 +571,16 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
         type: 'line',
         source: 'changed-edges',
         paint: {
-          'line-color': '#64748b',
+          'line-color': ['get', 'color'],
           'line-width': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            5, 1,
-            10, 1.5,
-            15, 2.5
+            5, 4,
+            10, 6,
+            15, 8
           ],
-          'line-opacity': 0.5
+          'line-opacity': 0.9
         }
       });
 

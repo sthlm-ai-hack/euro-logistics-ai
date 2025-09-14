@@ -388,18 +388,20 @@ const Map = ({ project, flowVisualizationData, changedNodes }: MapProps) => {
             }
           });
 
+          // Add circles for positive supply
           map.current.addLayer({
-            id: 'changed-nodes',
+            id: 'changed-nodes-positive',
             type: 'circle',
             source: 'changed-nodes',
+            filter: ['>=', ['get', 'supply'], 0],
             paint: {
               'circle-radius': [
                 'interpolate',
                 ['linear'],
                 ['get', 'supply'],
-                0, 8,
-                100, 20,
-                1000, 40
+                0, 5,
+                100, 12,
+                1000, 25
               ],
               'circle-color': ['get', 'color'],
               'circle-opacity': 0.8,
@@ -409,7 +411,42 @@ const Map = ({ project, flowVisualizationData, changedNodes }: MapProps) => {
             }
           });
 
-          // Add hover functionality
+          // Add squares for negative supply
+          map.current.addLayer({
+            id: 'changed-nodes-negative',
+            type: 'symbol',
+            source: 'changed-nodes',
+            filter: ['<', ['get', 'supply'], 0],
+            layout: {
+              'icon-image': 'square-marker',
+              'icon-size': [
+                'interpolate',
+                ['linear'],
+                ['*', ['get', 'supply'], -1], // Use absolute value
+                0, 0.3,
+                100, 0.6,
+                1000, 1.2
+              ],
+              'icon-allow-overlap': true
+            },
+            paint: {
+              'icon-opacity': 0.8
+            }
+          });
+
+          // Add square marker image for negative supply nodes
+          map.current.loadImage('data:image/svg+xml;base64,' + btoa(`
+            <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="16" height="16" fill="${features[0]?.properties?.color || '#ef4444'}" stroke="#ffffff" stroke-width="2"/>
+            </svg>
+          `), (error, image) => {
+            if (error) throw error;
+            if (image && !map.current?.hasImage('square-marker')) {
+              map.current?.addImage('square-marker', image);
+            }
+          });
+
+          // Add hover functionality for both positive and negative nodes
           const handleMouseEnter = (e: mapboxgl.MapMouseEvent) => {
             if (!map.current || !e.features?.[0]) return;
             
@@ -448,8 +485,10 @@ const Map = ({ project, flowVisualizationData, changedNodes }: MapProps) => {
             }
           };
 
-          map.current.on('mouseenter', 'changed-nodes', handleMouseEnter);
-          map.current.on('mouseleave', 'changed-nodes', handleMouseLeave);
+          map.current.on('mouseenter', 'changed-nodes-positive', handleMouseEnter);
+          map.current.on('mouseleave', 'changed-nodes-positive', handleMouseLeave);
+          map.current.on('mouseenter', 'changed-nodes-negative', handleMouseEnter);
+          map.current.on('mouseleave', 'changed-nodes-negative', handleMouseLeave);
         }
       }
     };
@@ -464,8 +503,11 @@ const Map = ({ project, flowVisualizationData, changedNodes }: MapProps) => {
     return () => {
       if (map.current?.getSource('changed-nodes')) {
         try {
-          if (map.current.getLayer('changed-nodes')) {
-            map.current.removeLayer('changed-nodes');
+          if (map.current.getLayer('changed-nodes-positive')) {
+            map.current.removeLayer('changed-nodes-positive');
+          }
+          if (map.current.getLayer('changed-nodes-negative')) {
+            map.current.removeLayer('changed-nodes-negative');
           }
           map.current.removeSource('changed-nodes');
         } catch (error) {

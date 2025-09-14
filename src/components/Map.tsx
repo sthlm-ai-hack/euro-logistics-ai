@@ -80,7 +80,12 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
 
       if (edgesError) throw edgesError;
 
-      console.log('Fetched data:', { nodes: nodes?.length || 0, edges: edges?.length || 0 });
+      console.log('Fetched data:', { 
+        nodes: nodes?.length || 0, 
+        edges: edges?.length || 0,
+        sampleEdge: edges?.[0],
+        sampleEdgeCoordinates: edges?.[0]?.coordinates
+      });
       setNodesData(nodes || []);
       setEdgesData(edges || []);
       toast.success("Map data refreshed");
@@ -317,6 +322,12 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
 
   // Add edges to map
   useEffect(() => {
+    console.log('Edges useEffect triggered', {
+      mapExists: !!map.current,
+      edgesDataLength: edgesData.length,
+      firstEdge: edgesData[0]
+    });
+    
     if (!map.current || !edgesData.length) return;
 
     const addEdges = () => {
@@ -331,8 +342,16 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
       }
 
       // Process edges
+      console.log('Processing edges, total:', edgesData.length);
       const validFeatures = edgesData
-        .map((edge) => {
+        .map((edge, index) => {
+          console.log(`Processing edge ${index}:`, {
+            id: edge.id,
+            coordinates: edge.coordinates,
+            coordinatesType: typeof edge.coordinates,
+            coordinatesKeys: edge.coordinates ? Object.keys(edge.coordinates) : 'null'
+          });
+          
           try {
             let coordinates = [];
             
@@ -352,10 +371,11 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
 
             // Validate coordinates
             if (!coordinates.length || coordinates.some((coord: any) => !Array.isArray(coord) || coord.length !== 2)) {
-              console.warn('Invalid edge coordinates:', edge.coordinates);
+              console.warn(`Invalid edge coordinates for edge ${index}:`, edge.coordinates);
               return null;
             }
 
+            console.log(`Valid edge ${index} processed with ${coordinates.length} coordinate pairs`);
             return {
               type: 'Feature' as const,
               properties: {
@@ -370,13 +390,17 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
               }
             };
           } catch (error) {
-            console.warn('Error processing edge:', edge, error);
+            console.warn(`Error processing edge ${index}:`, edge, error);
             return null;
           }
         })
         .filter(Boolean);
 
+      console.log('Valid features after processing:', validFeatures.length);
+      console.log('Sample valid feature:', validFeatures[0]);
+
       if (validFeatures.length > 0) {
+        console.log('Adding edges source and layer to map');
         map.current.addSource('edges', {
           type: 'geojson',
           data: {
@@ -384,7 +408,8 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
             features: validFeatures
           }
         });
-
+        
+        console.log('Added edges source, now adding layer');
         map.current.addLayer({
           id: 'edges',
           type: 'line',
@@ -402,6 +427,8 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
             'line-opacity': 0.8
           }
         });
+        
+        console.log('Edges layer added successfully');
 
         // Add click functionality for edges
         map.current.on('click', 'edges', (e) => {
@@ -421,6 +448,8 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
               .addTo(map.current!);
           }
         });
+      } else {
+        console.warn('No valid edge features to add to map');
       }
     };
 

@@ -477,7 +477,7 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
             }
           });
 
-          // Add circles for positive supply
+          // Add circles for all nodes (both positive and negative supply)
           map.current.addLayer({
             id: 'changed-nodes-positive',
             type: 'circle',
@@ -488,11 +488,11 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
                 'interpolate',
                 ['linear'],
                 ['get', 'supply'],
-                0, 5,
-                100, 12,
+                0, 8,
+                100, 15,
                 1000, 25
               ],
-              'circle-color': ['get', 'color'],
+              'circle-color': '#3b82f6', // Nice matte blue
               'circle-opacity': 0.8,
               'circle-stroke-width': 2,
               'circle-stroke-color': '#ffffff',
@@ -500,46 +500,26 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
             }
           });
 
-          // Create and add square marker image for negative supply nodes using canvas
-          const canvas = document.createElement('canvas');
-          canvas.width = 20;
-          canvas.height = 20;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            // Use a default color if no features exist yet
-            const defaultColor = features.find(f => f?.properties?.color)?.properties?.color || '#ef4444';
-            ctx.fillStyle = defaultColor;
-            ctx.fillRect(2, 2, 16, 16);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(2, 2, 16, 16);
-            
-            const imageData = ctx.getImageData(0, 0, 20, 20);
-            if (!map.current?.hasImage('square-marker')) {
-              map.current?.addImage('square-marker', imageData);
-            }
-          }
-
-          // Add squares for negative supply (only after image is created)
+          // Add circles for negative supply nodes
           map.current.addLayer({
             id: 'changed-nodes-negative',
-            type: 'symbol',
+            type: 'circle',
             source: 'changed-nodes',
             filter: ['<', ['get', 'supply'], 0],
-            layout: {
-              'icon-image': 'square-marker',
-              'icon-size': [
+            paint: {
+              'circle-radius': [
                 'interpolate',
                 ['linear'],
                 ['*', ['get', 'supply'], -1], // Use absolute value
-                0, 0.6,
-                100, 1.0,
-                1000, 1.8
+                0, 8,
+                100, 15,
+                1000, 25
               ],
-              'icon-allow-overlap': true
-            },
-            paint: {
-              'icon-opacity': 0.8
+              'circle-color': '#22c55e', // Nice matte green
+              'circle-opacity': 0.8,
+              'circle-stroke-width': 2,
+              'circle-stroke-color': '#ffffff',
+              'circle-stroke-opacity': 1
             }
           });
 
@@ -726,16 +706,16 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
         type: 'line',
         source: 'changed-edges',
         paint: {
-          'line-color': ['get', 'color'],
+          'line-color': '#dc2626', // Nice matte red
           'line-width': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            5, 4,
-            10, 6,
-            15, 8
+            5, 3,
+            10, 5,
+            15, 7
           ],
-          'line-opacity': 0.9
+          'line-opacity': 0.8
         }
       });
 

@@ -31,7 +31,32 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
         .eq("project_id", project.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching nodes:", error);
+        throw error;
+      }
+      console.log("Fetched nodes:", data?.length || 0);
+      return data || [];
+    },
+    enabled: !!project?.id,
+  });
+
+  // Fetch real-time edges data for this project
+  const { data: realtimeEdges, refetch: refetchEdges } = useQuery({
+    queryKey: ["realtime-changed-edges", project?.id],
+    queryFn: async () => {
+      if (!project?.id) return [];
+      const { data, error } = await supabase
+        .from("changed_edges")
+        .select("*")
+        .eq("project_id", project.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching edges:", error);
+        throw error;
+      }
+      console.log("Fetched edges:", data?.length || 0);
       return data || [];
     },
     enabled: !!project?.id,
@@ -39,13 +64,14 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
 
   // Use realtime data if available, fall back to props
   const displayNodes = realtimeNodes || changedNodes;
+  const displayEdges = realtimeEdges || changedEdges;
 
-  // Set up real-time subscription for nodes
+  // Set up real-time subscription for both nodes and edges
   useEffect(() => {
     if (!project?.id) return;
 
     const channel = supabase
-      .channel('map-nodes-realtime')
+      .channel('map-realtime')
       .on(
         'postgres_changes',
         {
@@ -55,8 +81,21 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
           filter: `project_id=eq.${project.id}`
         },
         (payload) => {
-          // Refetch nodes data when changes occur
+          console.log('Node change detected:', payload);
           refetchNodes();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'changed_edges',
+          filter: `project_id=eq.${project.id}`
+        },
+        (payload) => {
+          console.log('Edge change detected:', payload);
+          refetchEdges();
         }
       )
       .subscribe();
@@ -64,7 +103,7 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [project?.id, refetchNodes]);
+  }, [project?.id, refetchNodes, refetchEdges]);
 
   useEffect(() => {
     if (user) {
@@ -402,11 +441,13 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
           .filter(node => node.coordinates)
           .map(node => {
             let coordinates;
+            // Handle different coordinate formats
             if (node.coordinates.lat !== undefined && node.coordinates.lon !== undefined) {
-              coordinates = [node.coordinates.lon, node.coordinates.lat];
+              coordinates = [parseFloat(node.coordinates.lon), parseFloat(node.coordinates.lat)];
             } else if (Array.isArray(node.coordinates) && node.coordinates.length === 2) {
-              coordinates = [node.coordinates[0], node.coordinates[1]];
+              coordinates = [parseFloat(node.coordinates[0]), parseFloat(node.coordinates[1])];
             } else {
+              console.warn('Invalid node coordinates:', node.coordinates);
               return null;
             }
 
@@ -418,9 +459,9 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
               },
               properties: {
                 id: node.id,
-                name: node.name,
-                supply: node.supply,
-                color: node.color,
+                name: node.name || 'Unnamed Node',
+                supply: node.supply || 0,
+                color: node.color || '#3b82f6',
                 osm_id: node.osm_id
               }
             };
@@ -573,9 +614,9 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
     };
   }, [displayNodes]);
 
-  // Add changed edges visualization
+  // Add changed edges visualization with better error handling
   useEffect(() => {
-    if (!map.current || !changedEdges?.length) return;
+    if (!map.current) return;
 
     const mapInstance = map.current;
 
@@ -588,23 +629,72 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
         mapInstance.removeSource('changed-edges');
       }
 
-      // Create GeoJSON for changed edges
+      // Only proceed if we have edges data
+      if (!displayEdges?.length) {
+        console.log('No edges to display');
+        return;
+      }
+
+      console.log('Rendering edges:', displayEdges.length);
+
+      // Create GeoJSON for changed edges with better coordinate handling
+      const validFeatures = displayEdges
+        .map((edge) => {
+          try {
+            let coordinates = [];
+            
+            // Handle different coordinate formats
+            if (edge.coordinates) {
+              if (Array.isArray(edge.coordinates)) {
+                // Direct array of coordinates
+                coordinates = edge.coordinates;
+              } else if (edge.coordinates.lat && edge.coordinates.lon) {
+                // Object with lat/lon arrays
+                if (Array.isArray(edge.coordinates.lat) && Array.isArray(edge.coordinates.lon)) {
+                  // Zip lat and lon arrays together
+                  coordinates = edge.coordinates.lat.map((lat: number, i: number) => [
+                    parseFloat(String(edge.coordinates.lon[i])),
+                    parseFloat(String(lat))
+                  ]);
+                }
+              }
+            }
+
+            // Validate coordinates
+            if (!coordinates.length || coordinates.some((coord: any) => !Array.isArray(coord) || coord.length !== 2)) {
+              console.warn('Invalid edge coordinates:', edge.coordinates);
+              return null;
+            }
+
+            return {
+              type: 'Feature' as const,
+              properties: {
+                id: edge.id,
+                osm_id: edge.osm_id || 'Unknown',
+                cost: edge.cost || 0,
+                cap: edge.cap || 0,
+                color: edge.color || '#ef4444',
+              },
+              geometry: {
+                type: 'LineString' as const,
+                coordinates
+              }
+            };
+          } catch (error) {
+            console.warn('Error processing edge:', edge, error);
+            return null;
+          }
+        })
+        .filter(Boolean);
+
+      if (!validFeatures.length) {
+        console.warn('No valid edge features found');
+        return;
+      }
+
       const edgesGeoJSON = {
         type: 'FeatureCollection' as const,
-        features: changedEdges.map((edge) => ({
-          type: 'Feature' as const,
-          properties: {
-            id: edge.id,
-            osm_id: edge.osm_id,
-            cost: edge.cost,
-            cap: edge.cap,
-            color: edge.color,
-          },
-          geometry: {
-            type: 'LineString' as const,
-            coordinates: edge.coordinates || []
-          }
-        }))
+        features: validFeatures
       };
 
       // Add source and layer
@@ -675,7 +765,7 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
         mapInstance.removeSource('changed-edges');
       }
     };
-  }, [changedEdges]);
+  }, [displayEdges]);
 
   if (loading) {
     return (

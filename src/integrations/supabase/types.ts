@@ -16,10 +16,10 @@ export type Database = {
     Tables: {
       changed_edges: {
         Row: {
-          cap: number
-          color: string
+          cap: number | null
+          color: string | null
           coordinates: Json
-          cost: number
+          cost: number | null
           created_at: string
           id: string
           osm_id: string
@@ -28,10 +28,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          cap: number
-          color: string
+          cap?: number | null
+          color?: string | null
           coordinates: Json
-          cost: number
+          cost?: number | null
           created_at?: string
           id?: string
           osm_id: string
@@ -40,10 +40,10 @@ export type Database = {
           user_id: string
         }
         Update: {
-          cap?: number
-          color?: string
+          cap?: number | null
+          color?: string | null
           coordinates?: Json
-          cost?: number
+          cost?: number | null
           created_at?: string
           id?: string
           osm_id?: string

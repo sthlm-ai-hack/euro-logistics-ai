@@ -572,13 +572,20 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
           };
 
           const handleMouseLeave = () => {
-            if (!map.current) return;
-            
-            map.current.getCanvas().style.cursor = '';
-            
-            if (popup) {
-              popup.remove();
-              popup = null;
+            try {
+              if (!map.current) return;
+              
+              const canvas = map.current.getCanvas();
+              if (canvas) {
+                canvas.style.cursor = '';
+              }
+              
+              if (popup) {
+                popup.remove();
+                popup = null;
+              }
+            } catch (error) {
+              console.warn('Error in mouse leave handler:', error);
             }
           };
 
@@ -621,12 +628,23 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
     const mapInstance = map.current;
 
     const handleChangedEdgesVisualization = () => {
-      // Remove existing changed edges visualization
-      if (mapInstance.getLayer('changed-edges-layer')) {
-        mapInstance.removeLayer('changed-edges-layer');
-      }
-      if (mapInstance.getSource('changed-edges')) {
-        mapInstance.removeSource('changed-edges');
+      try {
+        // Check if style is loaded before accessing layers/sources
+        if (!mapInstance.isStyleLoaded()) {
+          console.warn('Map style not loaded yet, skipping edge visualization');
+          return;
+        }
+
+        // Remove existing changed edges visualization
+        if (mapInstance.getLayer('changed-edges-layer')) {
+          mapInstance.removeLayer('changed-edges-layer');
+        }
+        if (mapInstance.getSource('changed-edges')) {
+          mapInstance.removeSource('changed-edges');
+        }
+      } catch (error) {
+        console.warn('Error in edge visualization cleanup:', error);
+        return;
       }
 
       // Only proceed if we have edges data
@@ -721,30 +739,48 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
         }
       });
 
-      // Add hover effects
+      // Add hover effects with error handling
       mapInstance.on('mouseenter', 'changed-edges-layer', () => {
-        mapInstance.getCanvas().style.cursor = 'pointer';
+        try {
+          const canvas = mapInstance.getCanvas();
+          if (canvas) {
+            canvas.style.cursor = 'pointer';
+          }
+        } catch (error) {
+          console.warn('Error in edge mouseenter handler:', error);
+        }
       });
 
       mapInstance.on('mouseleave', 'changed-edges-layer', () => {
-        mapInstance.getCanvas().style.cursor = '';
+        try {
+          const canvas = mapInstance.getCanvas();
+          if (canvas) {
+            canvas.style.cursor = '';
+          }
+        } catch (error) {
+          console.warn('Error in edge mouseleave handler:', error);
+        }
       });
 
       mapInstance.on('click', 'changed-edges-layer', (e) => {
-        if (e.features && e.features.length > 0) {
-          const feature = e.features[0];
-          const props = feature.properties;
-          
-          new mapboxgl.Popup()
-            .setLngLat(e.lngLat)
-            .setHTML(`
-              <div class="p-2">
-                <div class="font-semibold">${props?.osm_id || 'Unknown Edge'}</div>
-                <div class="text-sm text-gray-600">Cost: ${props?.cost || 'N/A'}</div>
-                <div class="text-sm text-gray-600">Capacity: ${props?.cap || 'N/A'}</div>
-              </div>
-            `)
-            .addTo(mapInstance);
+        try {
+          if (e.features && e.features.length > 0) {
+            const feature = e.features[0];
+            const props = feature.properties;
+            
+            new mapboxgl.Popup()
+              .setLngLat(e.lngLat)
+              .setHTML(`
+                <div class="p-2">
+                  <div class="font-semibold">${props?.osm_id || 'Unknown Edge'}</div>
+                  <div class="text-sm text-gray-600">Cost: ${props?.cost || 'N/A'}</div>
+                  <div class="text-sm text-gray-600">Capacity: ${props?.cap || 'N/A'}</div>
+                </div>
+              `)
+              .addTo(mapInstance);
+          }
+        } catch (error) {
+          console.warn('Error in edge click handler:', error);
         }
       });
     };
@@ -758,11 +794,18 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
 
     // Cleanup function
     return () => {
-      if (mapInstance.getLayer('changed-edges-layer')) {
-        mapInstance.removeLayer('changed-edges-layer');
-      }
-      if (mapInstance.getSource('changed-edges')) {
-        mapInstance.removeSource('changed-edges');
+      try {
+        // Check if style is loaded and map exists before cleanup
+        if (mapInstance && mapInstance.isStyleLoaded()) {
+          if (mapInstance.getLayer('changed-edges-layer')) {
+            mapInstance.removeLayer('changed-edges-layer');
+          }
+          if (mapInstance.getSource('changed-edges')) {
+            mapInstance.removeSource('changed-edges');
+          }
+        }
+      } catch (error) {
+        console.warn('Error in edges cleanup:', error);
       }
     };
   }, [displayEdges]);

@@ -4,6 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 interface MapProps {
   project?: any;
@@ -18,6 +19,52 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
   const { user } = useAuth();
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Fetch real-time nodes data for this project
+  const { data: realtimeNodes, refetch: refetchNodes } = useQuery({
+    queryKey: ["realtime-changed-nodes", project?.id],
+    queryFn: async () => {
+      if (!project?.id) return [];
+      const { data, error } = await supabase
+        .from("changed_nodes")
+        .select("*")
+        .eq("project_id", project.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!project?.id,
+  });
+
+  // Use realtime data if available, fall back to props
+  const displayNodes = realtimeNodes || changedNodes;
+
+  // Set up real-time subscription for nodes
+  useEffect(() => {
+    if (!project?.id) return;
+
+    const channel = supabase
+      .channel('map-nodes-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'changed_nodes',
+          filter: `project_id=eq.${project.id}`
+        },
+        (payload) => {
+          // Refetch nodes data when changes occur
+          refetchNodes();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [project?.id, refetchNodes]);
 
   useEffect(() => {
     if (user) {
@@ -350,8 +397,8 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
       let popup: mapboxgl.Popup | null = null;
 
       // Add new changed nodes visualization if data exists
-      if (changedNodes && changedNodes.length > 0) {
-        const features = changedNodes
+      if (displayNodes && displayNodes.length > 0) {
+        const features = displayNodes
           .filter(node => node.coordinates)
           .map(node => {
             let coordinates;
@@ -524,7 +571,7 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
         }
       }
     };
-  }, [changedNodes]);
+  }, [displayNodes]);
 
   // Add changed edges visualization
   useEffect(() => {

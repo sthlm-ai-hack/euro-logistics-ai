@@ -22,9 +22,7 @@ interface ChangedNodesProps {
 }
 
 export const ChangedNodes = ({ projectId }: ChangedNodesProps) => {
-  const [changedNodes, setChangedNodes] = useState<ChangedNode[]>([]);
-
-  const { data: nodes, isLoading } = useQuery({
+  const { data: changedNodes, isLoading } = useQuery({
     queryKey: ["changed-nodes", projectId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,43 +35,6 @@ export const ChangedNodes = ({ projectId }: ChangedNodesProps) => {
       return data as ChangedNode[];
     },
   });
-
-  useEffect(() => {
-    if (nodes) {
-      setChangedNodes(nodes);
-    }
-  }, [nodes]);
-
-  // Set up real-time subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel('changed-nodes-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'changed_nodes',
-          filter: `project_id=eq.${projectId}`
-        },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setChangedNodes(prev => [payload.new as ChangedNode, ...prev]);
-          } else if (payload.eventType === 'UPDATE') {
-            setChangedNodes(prev => prev.map(node => 
-              node.id === payload.new.id ? payload.new as ChangedNode : node
-            ));
-          } else if (payload.eventType === 'DELETE') {
-            setChangedNodes(prev => prev.filter(node => node.id !== payload.old.id));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [projectId]);
 
   const formatCoordinates = (coords: any) => {
     if (coords && typeof coords === 'object') {
@@ -105,7 +66,7 @@ export const ChangedNodes = ({ projectId }: ChangedNodesProps) => {
     );
   }
 
-  if (changedNodes.length === 0) {
+  if (!changedNodes || changedNodes.length === 0) {
     return (
       <div className="flex items-center justify-center h-32">
         <div className="text-center space-y-2">

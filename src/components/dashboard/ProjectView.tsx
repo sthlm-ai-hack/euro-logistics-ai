@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bot, Clock, Calendar, MessageSquare, Info, Calculator, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ interface ProjectViewProps {
 }
 
 export const ProjectView = ({ project }: ProjectViewProps) => {
+  const queryClient = useQueryClient();
   const [activeFlowVisualization, setActiveFlowVisualization] = useState<string | null>(null);
   const [flowVisualizationData, setFlowVisualizationData] = useState<any | null>(null);
   const [hasSetDefault, setHasSetDefault] = useState(false);
@@ -37,6 +38,32 @@ export const ProjectView = ({ project }: ProjectViewProps) => {
     },
     enabled: !!project?.id,
   });
+
+  // Set up real-time subscription for changed nodes
+  useEffect(() => {
+    if (!project?.id) return;
+
+    const channel = supabase
+      .channel('changed-nodes-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'changed_nodes',
+          filter: `project_id=eq.${project.id}`
+        },
+        (payload) => {
+          // Invalidate and refetch the changed nodes query
+          queryClient.invalidateQueries({ queryKey: ["changed-nodes", project.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [project?.id, queryClient]);
 
   // Load default visualization on project change
   useEffect(() => {

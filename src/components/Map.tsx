@@ -412,7 +412,27 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
             }
           });
 
-          // Add squares for negative supply
+          // Create and add square marker image for negative supply nodes using canvas
+          const canvas = document.createElement('canvas');
+          canvas.width = 20;
+          canvas.height = 20;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            // Use a default color if no features exist yet
+            const defaultColor = features.find(f => f?.properties?.color)?.properties?.color || '#ef4444';
+            ctx.fillStyle = defaultColor;
+            ctx.fillRect(2, 2, 16, 16);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(2, 2, 16, 16);
+            
+            const imageData = ctx.getImageData(0, 0, 20, 20);
+            if (!map.current?.hasImage('square-marker')) {
+              map.current?.addImage('square-marker', imageData);
+            }
+          }
+
+          // Add squares for negative supply (only after image is created)
           map.current.addLayer({
             id: 'changed-nodes-negative',
             type: 'symbol',
@@ -434,24 +454,6 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
               'icon-opacity': 0.8
             }
           });
-
-          // Add square marker image for negative supply nodes using canvas
-          const canvas = document.createElement('canvas');
-          canvas.width = 20;
-          canvas.height = 20;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.fillStyle = features[0]?.properties?.color || '#ef4444';
-            ctx.fillRect(2, 2, 16, 16);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(2, 2, 16, 16);
-            
-            const imageData = ctx.getImageData(0, 0, 20, 20);
-            if (!map.current?.hasImage('square-marker')) {
-              map.current?.addImage('square-marker', imageData);
-            }
-          }
 
           // Add hover functionality for both positive and negative nodes
           const handleMouseEnter = (e: mapboxgl.MapMouseEvent) => {

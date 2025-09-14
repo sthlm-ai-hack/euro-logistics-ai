@@ -435,17 +435,23 @@ const Map = ({ project, flowVisualizationData, changedNodes, changedEdges }: Map
             }
           });
 
-          // Add square marker image for negative supply nodes
-          map.current.loadImage('data:image/svg+xml;base64,' + btoa(`
-            <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="2" width="16" height="16" fill="${features[0]?.properties?.color || '#ef4444'}" stroke="#ffffff" stroke-width="2"/>
-            </svg>
-          `), (error, image) => {
-            if (error) throw error;
-            if (image && !map.current?.hasImage('square-marker')) {
-              map.current?.addImage('square-marker', image);
+          // Add square marker image for negative supply nodes using canvas
+          const canvas = document.createElement('canvas');
+          canvas.width = 20;
+          canvas.height = 20;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = features[0]?.properties?.color || '#ef4444';
+            ctx.fillRect(2, 2, 16, 16);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(2, 2, 16, 16);
+            
+            const imageData = ctx.getImageData(0, 0, 20, 20);
+            if (!map.current?.hasImage('square-marker')) {
+              map.current?.addImage('square-marker', imageData);
             }
-          });
+          }
 
           // Add hover functionality for both positive and negative nodes
           const handleMouseEnter = (e: mapboxgl.MapMouseEvent) => {
